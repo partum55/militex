@@ -1,0 +1,23 @@
+.input-wrapper {
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.input-label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.custom-input {
+  padding: 0.75rem;
+  border: 1px solid var(--color-gray);
+  border-radius: var(--radius-default);
+  font-size: 1rem;
+}
+
+.custom-input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-primary);
+}

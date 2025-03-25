@@ -1,0 +1,11 @@
+:root {
+  --color-primary: #5F259F;
+  --color-secondary: #FFC107;
+  --color-dark: #1F1F1F;
+  --color-light: #FFFFFF;
+  --color-gray: #E0E0E0;
+  --radius-default: 4px;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+}
