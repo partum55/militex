@@ -1,0 +1,23 @@
+.car-card {
+  display: flex;
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.car-image {
+  width: 150px;
+  object-fit: cover;
+}
+
+.car-info {
+  padding: 1rem;
+  flex: 1;
+}
+
+.car-price {
+  font-weight: bold;
+  color: #4f46e5;
+  text-align: right;
+}
