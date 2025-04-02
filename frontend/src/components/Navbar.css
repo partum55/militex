@@ -1,27 +1,68 @@
 .navbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-md) var(--spacing-lg);
-  background-color: var(--color-light);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+  background-color: #4f46e5; /* Purple background */
+  color: #fff;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-.navbar-logo a {
-  color: var(--color-primary);
-  font-size: 1.5rem;
+.navbar-left .logo-link {
+  display: flex;
+  align-items: center;
   text-decoration: none;
-  font-weight: 700;
+  color: #fff;
+}
+
+.logo-image {
+  height: 40px;
+  margin-right: 0.5rem;
+}
+
+.logo-text {
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 
 .navbar-links {
   list-style: none;
   display: flex;
-  gap: 1rem;
+  gap: 2rem;
 }
 
 .navbar-links li a {
-  color: var(--color-dark);
+  color: #fff;
   text-decoration: none;
   font-weight: 500;
+  transition: color 0.2s;
+}
+
+.navbar-links li a:hover {
+  color: #ddd;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.icon-button:hover {
+  color: #ddd;
+}
+
+/* Optional dark mode styles */
+.dark-mode {
+  background-color: #222;
+  color: #eee;
 }
