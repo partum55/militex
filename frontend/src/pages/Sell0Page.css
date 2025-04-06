@@ -1,0 +1,129 @@
+.sell-page {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background-image: url("https://placehold.co/1920x1080");
+    background-size: cover;
+}
+
+.blur-overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background: rgba(217, 217, 217, 0.01);
+    backdrop-filter: blur(10px);
+    top: 0;
+    left: 0;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 32px;
+}
+
+.footer-bar {
+    background-color: #39236B;
+    height: 100%;
+    width: 100%;
+}
+
+.footer-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 8px;
+    color: #EDEDED;
+    font-size: 12px;
+    font-family: "Nunito", sans-serif;
+}
+
+.back-button {
+    position: absolute;
+    left: 128px;
+    top: 48px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.back-icon {
+    width: 16px;
+    height: 16px;
+    border: 1.6px solid #EDEDED;
+    border-radius: 50%;
+}
+
+.back-text {
+    color: #EDEDED;
+    font-size: 16px;
+    font-family: "Inter", sans-serif;
+}
+
+.form-card {
+    position: absolute;
+    left: 684px;
+    top: 144px;
+    width: 552px;
+    height: 760px;
+    background-color: #EDEDED;
+    border-radius: 64px;
+    padding: 64px;
+    box-sizing: border-box;
+}
+
+.form-title {
+    text-align: center;
+    color: #39236B;
+    font-size: 32px;
+    font-family: "e-Ukraine", sans-serif;
+    font-weight: 700;
+    margin-bottom: 48px;
+}
+
+.form-group {
+    margin-bottom: 32px;
+}
+
+.form-label {
+    color: #39236B;
+    font-size: 16px;
+    font-family: "Nunito", sans-serif;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-input {
+    width: 100%;
+    height: 48px;
+    padding: 12px;
+    border-radius: 64px;
+    outline: 2px solid #39236B;
+    font-size: 16px;
+    color: #B8BCCA;
+    font-family: "Nunito", sans-serif;
+    display: flex;
+    align-items: center;
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 32px;
+}
+
+.half {
+    width: 100%;
+}
+
+.next-button {
+    margin-top: 48px;
+    align-self: flex-end;
+    color: #39236B;
+    font-size: 16px;
+    font-family: "Nunito", sans-serif;
+    text-align: right;
+    cursor: pointer;
+}
