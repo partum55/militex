@@ -1,116 +1,90 @@
 .sell2-page {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    background-image: url("https://placehold.co/1920x1080");
-    background-size: cover;
-    background-position: center;
-    font-family: 'Nunito', sans-serif;
-  }
-  
-  .sell2-blur {
-    position: absolute;
-    inset: 0;
-    background: rgba(217, 217, 217, 0.01);
-    backdrop-filter: blur(10px);
-  }
-  
-  .sell2-footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 32px;
-    background: #39236B;
-    color: #EDEDED;
-    font-size: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .sell2-back {
-    position: absolute;
-    top: 48px;
-    left: 128px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #EDEDED;
-    font-size: 16px;
-    font-family: 'Inter', sans-serif;
-    text-decoration: none;
-  }
-  
-  .sell2-circle {
-    width: 16px;
-    height: 16px;
-    border: 1.6px solid #EDEDED;
-    border-radius: 50%;
-  }
-  
-  .sell2-form {
-    position: absolute;
-    top: 144px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 552px;
-    height: 406px;
-    background: #EDEDED;
-    border-radius: 64px;
-    padding: 64px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
-  }
-  
-  .sell2-title {
-    font-family: 'e-Ukraine', sans-serif;
-    font-size: 32px;
-    font-weight: 700;
-    color: #39236B;
-    text-align: center;
-    width: 100%;
-  }
-  
-  .sell2-subtext {
-    font-size: 16px;
-    color: #39236B;
-    text-align: center;
-    width: 100%;
-  }
-  
-  .sell2-button {
-    width: 424px;
-    height: 48px;
-    background-color: #39236B;
-    color: #EDEDED;
-    border-radius: 64px;
-    border: none;
-    font-size: 20px;
-    font-weight: 700;
-    font-family: 'Nunito', sans-serif;
-    cursor: pointer;
-    margin-top: 12px;
-  }
-  
-  .sell2-back-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 16px;
-    background: none;
-    border: none;
-    color: #39236B;
-    font-size: 16px;
-    cursor: pointer;
-    font-family: 'Nunito', sans-serif;
-  }
-  
-  .sell2-circle-dark {
-    width: 16px;
-    height: 16px;
-    border: 1.6px solid #39236B;
-    border-radius: 50%;
-  }
-  
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: url("https://placehold.co/1920x1080") no-repeat center center;
+  background-size: cover;
+}
+
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(217, 217, 217, 0.01);
+  backdrop-filter: blur(10px);
+  z-index: -1;
+}
+
+.confirmation-card {
+  width: 552px;
+  margin: 144px auto;
+  padding: 32px;
+  background: #ededed;
+  border-radius: 64px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.confirmation-title {
+  font-size: 32px;
+  font-family: "e-Ukraine", sans-serif;
+  font-weight: 700;
+  color: #39236b;
+  margin-bottom: 16px;
+}
+
+.confirmation-text {
+  font-size: 16px;
+  font-family: "Nunito", sans-serif;
+  font-weight: 400;
+  color: #39236b;
+  margin-bottom: 32px;
+}
+
+.form-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 32px;
+  background: #39236b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-text {
+  color: #ededed;
+  font-size: 12px;
+  font-family: "Nunito", sans-serif;
+}
+
+.back-to-site {
+  position: absolute;
+  top: 48px;
+  left: 128px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-icon {
+  width: 16px;
+  height: 16px;
+  background: #ededed;
+  border-radius: 50%;
+}
+
+.back-text {
+  color: #ededed;
+  font-size: 16px;
+  font-family: "Inter", sans-serif;
+}
