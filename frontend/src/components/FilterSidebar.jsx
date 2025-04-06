@@ -1,23 +1,33 @@
+// src/components/FilterSidebar.jsx
 import React from "react";
 import "./FilterSidebar.css";
 
 export default function FilterSidebar() {
   return (
-    <aside className="sidebar">
-      <h2 className="sidebar-title">Фільтри</h2>
+    <aside className="filter-sidebar">
+      <h2 className="sidebar-title">Filters</h2>
+
       <div className="filter-group">
-        <label>Ціна</label>
+        <label>Price Range</label>
         <input type="range" min="0" max="50000" />
       </div>
+
       <div className="filter-group">
-        <label>Пробіг</label>
+        <label>Mileage</label>
         <input type="range" min="0" max="500000" />
       </div>
+
       <div className="filter-group">
-        <label>Паливо</label>
-        <div><input type="checkbox" /> Бензин</div>
-        <div><input type="checkbox" /> Дизель</div>
-        <div><input type="checkbox" /> ГАЗ</div>
+        <label>Fuel Type</label>
+        <div>
+          <input type="checkbox" /> Gasoline
+        </div>
+        <div>
+          <input type="checkbox" /> Diesel
+        </div>
+        <div>
+          <input type="checkbox" /> LPG
+        </div>
       </div>
     </aside>
   );

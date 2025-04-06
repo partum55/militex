@@ -27,7 +27,7 @@ const Navbar = () => {
       <div className="navbar-left">
         <Link to="/" className="logo-link">
           <img
-            src="/logo.png"  // Place your logo in frontend/src/public or adjust path accordingly
+            src="../../public/images/logo.png"
             alt="Militex Logo"
             className="logo-image"
           />
@@ -46,7 +46,7 @@ const Navbar = () => {
           <Link to="/sell">Sell</Link>
         </li>
         <li>
-          <Link to="/tuning">Tuning</Link>
+          <Link to="/">Foundation</Link>
         </li>
       </ul>
 

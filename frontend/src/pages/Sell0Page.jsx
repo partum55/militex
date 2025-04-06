@@ -61,9 +61,18 @@ function Sell0Page() {
                         <div className="form-input">Manual</div>
                     </div>
                 </div>
-
-                <div className="next-button">
-                    <span>Next</span>
+                <div style={{width: 196, height: 74, left: 292, top: 330, position: 'absolute'}}>
+                    <div style={{width: 196, left: 0, top: 0, position: 'absolute', color: '#39236B', fontSize: 16, fontFamily: 'Nunito', fontWeight: '400', lineHeight: 24, letterSpacing: 0.16, wordWrap: 'break-word'}}>Mileage</div>
+                    <div style={{width: 196, height: 48, padding: 12, left: 0, top: 26, position: 'absolute', borderRadius: 64, outline: '2px #39236B solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 10, display: 'inline-flex'}}>
+                        <div style={{alignSelf: 'stretch', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#B8BCCA', fontSize: 16, fontFamily: 'Nunito', fontWeight: '400', lineHeight: 24, letterSpacing: 0.16, wordWrap: 'break-word'}}>123 456</div>
+                    </div>
+                </div>
+                <div style={{width: 75, height: 32, left: 413, top: 664, position: 'absolute'}}>
+                    <div style={{width: 75, height: 32, left: 0, top: 0, position: 'absolute'}} />
+                    <div data-size="16" style={{width: 16, height: 16, left: 67, top: 24, position: 'absolute', transform: 'rotate(180deg)', transformOrigin: 'top left', overflow: 'hidden'}}>
+                        <div style={{width: 9.33, height: 9.33, left: 3.33, top: 3.33, position: 'absolute', outline: '1.60px #39236B solid', outlineOffset: '-0.80px'}} />
+                    </div>
+                    <div style={{left: 8, top: 4, position: 'absolute', textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#39236B', fontSize: 16, fontFamily: 'Nunito', fontWeight: '400', lineHeight: 24, letterSpacing: 0.16, wordWrap: 'break-word'}}>Next</div>
                 </div>
             </div>
         </div>

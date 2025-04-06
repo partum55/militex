@@ -1,9 +1,12 @@
+/* src/components/CarCard.css */
+
 .car-card {
   display: flex;
-  background: white;
-  border-radius: 1rem;
+  background: #fff;
+  border-radius: 0.5rem;
   overflow: hidden;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  gap: 1rem;
 }
 
 .car-image {
@@ -14,9 +17,17 @@
 .car-info {
   padding: 1rem;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.car-info h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
 }
 
 .car-price {
+  margin-top: auto;
   font-weight: bold;
   color: #4f46e5;
   text-align: right;
