@@ -3,3 +3,4 @@ from django.contrib import admin
 
 User = get_user_model()
 admin.site.register(User)
+# admin.site.register(Car)

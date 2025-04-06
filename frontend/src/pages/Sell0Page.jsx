@@ -74,7 +74,7 @@ function Sell0Page() {
                     <div data-size="16" style={{width: 16, height: 16, left: 67, top: 24, position: 'absolute', transform: 'rotate(180deg)', transformOrigin: 'top left', overflow: 'hidden'}}>
                         <div style={{width: 9.33, height: 9.33, left: 3.33, top: 3.33, position: 'absolute', outline: '1.60px #39236B solid', outlineOffset: '-0.80px'}} />
                     </div>
-                    <div style={{left: 8, top: 4, position: 'absolute', textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#39236B', fontSize: 16, fontFamily: 'Nunito', fontWeight: '400', lineHeight: 24, letterSpacing: 0.16, wordWrap: 'break-word'}}>Next</div>
+                    <div style={{left: 8, top: 4, position: 'absolute', textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#39236B', fontSize: 16, fontFamily: 'Nunito', fontWeight: '400', lineHeight: 24, letterSpacing: 0.16, wordWrap: 'break-word'}}><Link to="/sell-1">Next</Link></div>
                 </div>
             </div>
         </div>

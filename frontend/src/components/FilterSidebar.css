@@ -1,23 +1,29 @@
-.car-card {
-  display: flex;
-  background: white;
-  border-radius: 1rem;
-  overflow: hidden;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-.car-image {
-  width: 150px;
-  object-fit: cover;
-}
-
-.car-info {
+/* src/components/FilterSidebar.css */
+.filter-sidebar {
+  width: 250px;
   padding: 1rem;
-  flex: 1;
+  background: #fff;
+  border-radius: 0.5rem;
+  margin: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.car-price {
+.sidebar-title {
   font-weight: bold;
-  color: #4f46e5;
-  text-align: right;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.filter-group {
+  margin-bottom: 1.5rem;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.filter-group input[type="range"] {
+  width: 100%;
 }

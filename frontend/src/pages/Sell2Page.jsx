@@ -27,11 +27,11 @@ function Sell2Page() {
                     <div data-size="16" style={{width: 16, height: 16, left: 8, top: 8, position: 'absolute', overflow: 'hidden'}}>
                         <div style={{width: 9.33, height: 9.33, left: 3.33, top: 3.33, position: 'absolute', outline: '1.60px #39236B solid', outlineOffset: '-0.80px'}} />
                     </div>
-                    <div style={{left: 32, top: 4, position: 'absolute', textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#39236B', fontSize: 16, fontFamily: 'Nunito', fontWeight: '400', lineHeight: 24, letterSpacing: 0.16, wordWrap: 'break-word'}}>Back</div>
+                    <div style={{left: 32, top: 4, position: 'absolute', textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#39236B', fontSize: 16, fontFamily: 'Nunito', fontWeight: '400', lineHeight: 24, letterSpacing: 0.16, wordWrap: 'break-word'}}><Link to="/sell-1">Back</Link></div>
                 </div>
                 <div data-property-1="default" style={{width: 424, height: 48, left: 64, top: 198, position: 'absolute'}}>
                     <div style={{width: 424, height: 48, left: 0, top: 0, position: 'absolute', background: '#39236B', borderRadius: 64}} />
-                    <div style={{width: 300.71, height: 27, left: 61.65, top: 10.50, position: 'absolute', textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#EDEDED', fontSize: 20, fontFamily: 'Nunito', fontWeight: '700', lineHeight: 30, letterSpacing: 0.20, wordWrap: 'break-word'}}>Sell Car</div>
+                    <div style={{width: 300.71, height: 27, left: 61.65, top: 10.50, position: 'absolute', textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#EDEDED', fontSize: 20, fontFamily: 'Nunito', fontWeight: '700', lineHeight: 30, letterSpacing: 0.20, wordWrap: 'break-word'}}><Link to="/">Sell Car</Link></div>
                 </div>
             </div>
         </div>
