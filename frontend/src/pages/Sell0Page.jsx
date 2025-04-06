@@ -16,7 +16,7 @@ function Sell0Page() {
                 <div data-size="16" style={{width: 16, height: 16, left: 8, top: 8, position: 'absolute', overflow: 'hidden'}}>
                     <div style={{width: 9.33, height: 9.33, left: 3.33, top: 3.33, position: 'absolute', outline: '1.60px #EDEDED solid', outlineOffset: '-0.80px'}} />
                 </div>
-                <div style={{left: 32, top: 8, position: 'absolute', color: '#EDEDED', fontSize: 16, fontFamily: 'Inter', fontWeight: '400', lineHeight: 16, wordWrap: 'break-word'}}>Back to site</div>
+                <div style={{left: 32, top: 8, position: 'absolute', color: '#EDEDED', fontSize: 16, fontFamily: 'Inter', fontWeight: '400', lineHeight: 16, wordWrap: 'break-word'}}><Link to="/">Back to site</Link></div>
             </div>
             <div data-page="1" style={{width: 552, height: 760, left: 684, top: 144, position: 'absolute'}}>
                 <div style={{width: 552, height: 760, left: 0, top: 0, position: 'absolute', background: '#EDEDED', borderRadius: 64}} />
