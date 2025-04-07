@@ -144,26 +144,9 @@ html, body {
 }
 
 .back-text {
-  color: #fcfcfc;
-  font-size: 14px;
-  font-family: Nunito, sans-serif;
-}
-
-/* Футер */
-.footer {
-  margin-top: 10%;
-  width: 100%;
-  height: 48px;
-  background: #39236b;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.footer-text {
-  color: #ffffff;
-  font-size: 12px;
-  font-family: 'Nunito', sans-serif;
+  color: #ededed;
+  font-size: 16px;
+  font-family: "Inter", sans-serif;
 }
 
 @media (max-width: 600px) {
