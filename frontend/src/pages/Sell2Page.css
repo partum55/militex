@@ -1,10 +1,19 @@
 .sell2-page {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background: url("https://placehold.co/1920x1080") no-repeat center center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6DoS5I5a1w_LfAcjUx5gC7NEyu11rLSZWQQ&s');
   background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  margin: auto;
+  margin-top: 0px;
+  padding-bottom: 0px;
 }
+
 
 .background-overlay {
   position: absolute;
@@ -18,35 +27,63 @@
 }
 
 .confirmation-card {
-  width: 552px;
-  margin: 144px auto;
-  padding: 32px;
-  background: #ededed;
-  border-radius: 64px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  position: centered;
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+  margin-top: 100px;
+  background: #ffffff;
+  border-radius: 48px;
+  padding: 50px 40px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .confirmation-title {
   font-size: 32px;
-  font-family: "e-Ukraine", sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-weight: 700;
   color: #39236b;
-  margin-bottom: 16px;
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .confirmation-text {
-  font-size: 16px;
+  font-size: 20px;
   font-family: "Nunito", sans-serif;
   font-weight: 400;
   color: #39236b;
   margin-bottom: 32px;
 }
 
+.sell-button {
+  height:50px;
+  width:600px;
+  background: #39236b;
+  color: #ffffff;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+  font-size: 14px;
+  margin-top: 1rem;
+}
+
 .form-navigation {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  margin-top: 2rem;
+}
+
+.form-button {
+  background: #ffffff;
+  color: #39236b;
+  border: none;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 .footer {
@@ -68,8 +105,8 @@
 
 .back-to-site {
   position: absolute;
-  top: 48px;
-  left: 128px;
+  top: 20px;
+  left: 20px;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -79,12 +116,17 @@
 .back-icon {
   width: 16px;
   height: 16px;
-  background: #ededed;
   border-radius: 50%;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
 }
 
 .back-text {
-  color: #ededed;
-  font-size: 16px;
-  font-family: "Inter", sans-serif;
+  position: right;
+  color: #fcfcfc;
+  font-size: 14px;
+  font-family: Nunito, sans-serif;
 }
