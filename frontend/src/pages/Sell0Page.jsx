@@ -9,39 +9,47 @@ function Sell0Page() {
   return (
     <div className="sell-page">
       <Navbar />
-      <div className="blur-overlay" />
+
+      {/* This overlay can be used for a blur effect */}
+      <div className="blur-overlay"></div>
 
       <div className="form-card">
-        <h1 className="form-title">Sell your car</h1>
+        <h1 className="form-title">Sell Your Car</h1>
 
-        <FormInput label="Car Make" value="Ford" />
-        <FormInput label="Car Model" value="Ranger" />
+        {/* Car Make and Model */}
+        <FormInput label="Car Make" defaultValue="Ford" />
+        <FormInput label="Car Model" defaultValue="Ranger" />
 
+        {/* Year and Mileage */}
         <div className="form-row">
-          <FormInput label="Year of Manufacture" value="2015" />
-          <FormInput label="Mileage" value="123 456" />
+          <FormInput label="Year of Manufacture" defaultValue="2015" />
+          <FormInput label="Mileage" defaultValue="123 456" />
         </div>
 
+        {/* Vehicle Type and Condition */}
         <div className="form-row">
-          <FormInput label="Vehicle Type" value="Pickup" />
-          <FormInput label="Condition" value="Used" />
+          <FormInput label="Vehicle Type" defaultValue="Pickup" />
+          <FormInput label="Condition" defaultValue="Used" />
         </div>
 
+        {/* Fuel Type and Transmission */}
         <div className="form-row">
-          <FormInput label="Fuel Type" value="Diesel" />
-          <FormInput label="Transmission" value="Manual" />
+          <FormInput label="Fuel Type" defaultValue="Diesel" />
+          <FormInput label="Transmission" defaultValue="Manual" />
         </div>
 
+        {/* Next Button */}
         <FormButton label="Next" />
       </div>
 
       <footer className="footer">
-        <div className="footer-bar" />
+        <div className="footer-bar"></div>
         <div className="footer-text">2025. All rights reserved</div>
       </footer>
 
+      {/* Back to site link */}
       <Link to="/" className="back-button">
-        <div className="back-icon" />
+        <div className="back-icon"></div>
         <span className="back-text">Back to site</span>
       </Link>
     </div>

@@ -10,8 +10,9 @@ def index(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("accounts.urls")),
-    re_path(r"^(?:.*)/?$", index, name="index"),  # Catch-all route
+    path("api/accounts/", include("accounts.urls")),
+    path("api/cars/", include("car.urls")),
+    re_path(r"^(?:.*)/?$", index, name="index"),  # Catch-all for React routes
 ]
 
 # Serve static/media in development

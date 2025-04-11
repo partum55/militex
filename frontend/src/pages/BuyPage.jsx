@@ -1,6 +1,6 @@
 import React from "react";
 import Navbar from "../components/Navbar";
-import FilterButton from "../components/FilterButton";
+// import FilterButton from "../components/FilterButton";
 import FilterSidebar from "../components/FilterSidebar";
 import CarCard from "../components/CarCard";
 import FormButton from "../components/FormButton";

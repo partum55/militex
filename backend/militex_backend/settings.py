@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     # Your apps
+    'car',
     'accounts',
 ]
 
@@ -84,7 +85,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'UTC+3'
 USE_I18N = True
 USE_TZ = True
 
