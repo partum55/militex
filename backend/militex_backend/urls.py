@@ -9,7 +9,8 @@ def index(request):
     return render(request, "index.html")
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("", index, name="index"),
+    path("admin", admin.site.urls),
     path("api/accounts/", include("accounts.urls")),
     path("api/cars/", include("car.urls")),
     re_path(r"^(?:.*)/?$", index, name="index"),  # Catch-all for React routes

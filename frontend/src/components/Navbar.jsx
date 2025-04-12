@@ -47,9 +47,9 @@ export default function Navbar() {
 
       {/* Navigation Links - Desktop */}
       <div className={`nav-links ${isMobileMenuOpen ? 'mobile-active' : ''}`}>
-        <a href="" className="nav-link">Home</a>
-        <a href="api/cars/buy" className="nav-link">Buy</a>
-        <a href="api/cars/sell" className="nav-link">Sell</a>
+        <a href="/" className="nav-link">Home</a>
+        <a href="/buy" className="nav-link">Buy</a>
+        <a href="/sell" className="nav-link">Sell</a>
         <a href="#" className="nav-link">Fundraiser</a>
       </div>
 
@@ -84,10 +84,10 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <a href="api/acoounts/login" className="dropdown-item" onClick={handleLogin}>
+                  <a href="/login" className="dropdown-item" onClick={handleLogin}>
                     <i className="login-icon">🔑</i> Login
                   </a>
-                  <a href="api/accounts/signup" className="dropdown-item">
+                  <a href="/signup" className="dropdown-item">
                     <i className="signup-icon">📝</i> Sign Up
                   </a>
                 </>

@@ -20,11 +20,11 @@ function App() {
             <Navbar />
             <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="api/accounts/login" element={<LoginPage />} />
-                <Route path="api/accounts/signup" element={<SignUpPage />} />
-                <Route path="/api/cars/buy" element={<CarMarketplacePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignUpPage />} />
+                <Route path="/buy" element={<CarMarketplacePage />} />
                 <Route path="/buy-test" element={<BuyPage />} />
-                <Route path="api/cars/sell" element={<SellCarPage />} />
+                <Route path="/sell" element={<SellCarPage />} />
                 <Route path="/sell-0" element={<Sell0Page />} />
                 <Route path="/sell-1" element={<Sell1Page />} />
                 <Route path="/sell-2" element={<Sell2Page />} />
