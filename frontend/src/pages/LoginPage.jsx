@@ -2,29 +2,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "./LoginPage.css"; // Ensure this path is correct
-import axios from 'axios';
-
-// Get CSRF token from cookies
-const getCookie = (name) => {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-      if (cookie.startsWith(name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-};
-
-const csrfToken = getCookie('csrftoken');
-
-// Set axios default header for CSRF token
-axios.defaults.headers.common["X-CSRFToken"] = csrfToken;
-
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
