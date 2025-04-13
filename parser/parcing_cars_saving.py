@@ -32,7 +32,7 @@ class Seller(Base):
     cars = relationship("Car", back_populates="seller")
 
 # Database connection
-DATABASE_URL = "sqlite:///./test_parcing_data.db"
+DATABASE_URL = "sqlite+aiosqlite:///./test_parcing_data.db"
 engine = create_async_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 AsyncSessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 

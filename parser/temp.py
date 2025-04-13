@@ -9,7 +9,7 @@ headers = {"User-Agent": "Mozilla/5.0"}
 
 BASE_URL = 'https://auto.ria.com/uk/search/?indexName=auto&body.id[0]=5&category_id=1&page=1'
 
-def get_suv_links(limit=10):
+def get_suv_links(limit=100):
     response = requests.get(BASE_URL, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
     links = []
@@ -125,7 +125,7 @@ async def save_car_to_db(car_data):
 
 async def main():
     await init_db()
-    links = get_suv_links(limit=10)
+    links = get_suv_links(limit=100)
     for link in links:
         car_data = parse_car_details(link)
         if car_data:

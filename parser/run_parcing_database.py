@@ -1,5 +1,5 @@
 import asyncio
-from parcing_cars_saving_MongoDB import init_db, create_sample_data, fetch_all_cars
+from parcing_cars_saving import init_db, create_sample_data, fetch_all_cars
 
 async def main():
     await init_db()
