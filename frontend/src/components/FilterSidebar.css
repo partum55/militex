@@ -1,0 +1,29 @@
+/* src/components/FilterSidebar.css */
+.filter-sidebar {
+  width: 250px;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 0.5rem;
+  margin: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.filter-group {
+  margin-bottom: 1.5rem;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.filter-group input[type="range"] {
+  width: 100%;
+}

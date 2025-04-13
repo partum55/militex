@@ -1,0 +1,95 @@
+/* Container for the Sell page */
+.sell-page {
+  position: relative;
+  min-height: 100vh;
+  background: #f9f9f9;
+  font-family: Arial, sans-serif;
+}
+
+/* Optional blur overlay for background effect */
+.blur-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+  z-index: 1;
+}
+
+/* Card for the form, centered on the page */
+.form-card {
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  padding: 2rem;
+  max-width: 500px;
+  margin: 4rem auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Title style */
+.form-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+/* Arrange inputs in a row */
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Footer styling */
+.footer {
+  position: relative;
+  z-index: 2;
+  margin-top: 2rem;
+  text-align: center;
+  padding: 1rem;
+  background: #4f46e5;
+  color: #fff;
+}
+
+.footer-bar {
+  height: 2px;
+  background: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.footer-text {
+  font-size: 0.9rem;
+}
+
+/* Back button styling */
+.back-button {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  background: #4f46e5;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  z-index: 2;
+}
+
+.back-icon {
+  width: 20px;
+  height: 20px;
+  background-image: url('../../public/images/back-icon.png'); /* Replace with your actual icon */
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-right: 0.5rem;
+}
+
+.back-text {
+  font-size: 0.9rem;
+}
