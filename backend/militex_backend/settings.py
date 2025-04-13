@@ -25,6 +25,7 @@ INSTALLED_APPS = [
 
     # Your apps:
     'accounts',
+    'car',
 ]
 
 MIDDLEWARE = [
@@ -40,10 +41,15 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'militex_backend.urls'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'build/static'),
+    # Add other static file directories if needed
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -93,3 +99,5 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+AUTH_USER_MODEL = 'accounts.User'
