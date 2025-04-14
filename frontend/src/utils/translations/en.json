@@ -1,0 +1,52 @@
+{
+  "common": {
+    "home": "Home",
+    "buy": "Buy",
+    "sell": "Sell",
+    "fundraiser": "Fundraiser",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "profile": "Profile",
+    "viewDetails": "View Details",
+    "next": "Next",
+    "back": "Back"
+  },
+  "home": {
+    "welcome": "Welcome to",
+    "tagline": "Exclusive Car Deals Tailored for Military Personnel",
+    "browseBtn": "Browse Cars",
+    "mission": "Our Mission",
+    "missionText": "At Militex, we understand the unique lifestyle and requirements of military families and service members. Our platform curates high-quality car deals designed to meet your needs—providing trusted, verified listings and competitive prices so you can find the perfect ride with confidence.",
+    "simple": "Simple",
+    "transparent": "Transparent",
+    "tailored": "Tailored",
+    "step1": "Browse: Explore our handpicked car listings that fit military needs.",
+    "step2": "Compare: Review detailed specs, prices, and benefits.",
+    "step3": "Connect: Get in touch directly with trusted sellers for a smooth transaction.",
+    "builtForHeroes": "Built for Our Heroes",
+    "featuredVehicles": "Featured Vehicles",
+    "viewAllListings": "View All Listings"
+  },
+  "cars": {
+    "mileage": "km"
+  },
+  "footer": {
+    "about": "MILITEX is a specialized vehicle marketplace dedicated to supporting military personnel, veterans, and their families.",
+    "quickLinks": "Quick Links",
+    "resources": "Resources",
+    "aboutUs": "About Us",
+    "contactUs": "Contact Us",
+    "faq": "FAQ",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "cookiePolicy": "Cookie Policy",
+    "contact": "Contact",
+    "allRightsReserved": "All rights reserved."
+  },
+  "auth": {
+    "username": "Username",
+    "password": "Password",
+    "login": "Login"
+  }
+}

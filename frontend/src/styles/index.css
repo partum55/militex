@@ -1,0 +1,289 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'); /* Tailwind CSS base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import fonts */
+
+/* Root variables for consistent theming */
+:root {
+  /* Primary color palette */
+  --color-primary: #312e81; /* indigo-900 */
+  --color-primary-dark: #1e1b4b; /* indigo-950 */
+  --color-primary-light: #4338ca; /* indigo-700 */
+  --color-primary-bg: #eef2ff; /* indigo-50 */
+
+  /* Secondary colors */
+  --color-secondary: #6366f1; /* indigo-500 */
+  --color-accent: #c7d2fe; /* indigo-200 */
+
+  /* Text colors */
+  --color-text-primary: #1f2937; /* gray-800 */
+  --color-text-secondary: #4b5563; /* gray-600 */
+  --color-text-light: #9ca3af; /* gray-400 */
+  --color-text-on-primary: #ffffff;
+
+  /* Status colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+}
+
+/* Base element styling */
+@layer base {
+  html {
+    @apply font-sans text-gray-800 antialiased;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-gray-50;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold text-gray-800;
+  }
+
+  h1 {
+    @apply text-4xl mb-6;
+  }
+
+  h2 {
+    @apply text-3xl mb-4;
+  }
+
+  h3 {
+    @apply text-2xl mb-3;
+  }
+
+  h4 {
+    @apply text-xl mb-2;
+  }
+
+  a {
+    @apply text-indigo-900 hover:text-indigo-700 transition-colors;
+  }
+
+  /* Focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-indigo-500 ring-offset-2;
+  }
+}
+
+/* Component classes */
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors;
+  }
+
+  .btn-primary {
+    @apply bg-indigo-900 text-white hover:bg-indigo-800;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-indigo-900 border border-indigo-900 hover:bg-indigo-50;
+  }
+
+  .btn-outline {
+    @apply bg-transparent text-white border border-white hover:bg-white/10;
+  }
+
+  .btn-success {
+    @apply bg-success-500 text-white hover:bg-success-700;
+  }
+
+  .btn-danger {
+    @apply bg-error-500 text-white hover:bg-error-700;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-lg;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1 text-sm;
+  }
+
+  .btn-icon {
+    @apply p-2 rounded-full;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg;
+  }
+
+  .card-body {
+    @apply p-4;
+  }
+
+  .card-title {
+    @apply text-xl font-bold mb-2;
+  }
+
+  .card-footer {
+    @apply px-4 py-3 bg-gray-50 border-t border-gray-200;
+  }
+
+  /* Forms */
+  .form-group {
+    @apply mb-4;
+  }
+
+  .form-label {
+    @apply block mb-2 font-medium text-gray-700;
+  }
+
+  .form-control {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+  }
+
+  .form-select {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+  }
+
+  .form-checkbox {
+    @apply rounded border-gray-300 text-indigo-900 focus:ring-indigo-500;
+  }
+
+  .form-radio {
+    @apply border-gray-300 text-indigo-900 focus:ring-indigo-500;
+  }
+
+  /* Navigation */
+  .nav-link {
+    @apply px-4 py-2 text-gray-200 hover:text-white transition-colors;
+  }
+
+  .nav-link.active {
+    @apply text-white font-medium;
+  }
+
+  /* Alerts */
+  .alert {
+    @apply p-4 mb-4 rounded-lg;
+  }
+
+  .alert-success {
+    @apply bg-success-50 text-success-700 border border-success-100;
+  }
+
+  .alert-error {
+    @apply bg-error-50 text-error-700 border border-error-100;
+  }
+
+  .alert-warning {
+    @apply bg-warning-50 text-warning-700 border border-warning-100;
+  }
+
+  .alert-info {
+    @apply bg-info-50 text-info-700 border border-info-100;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply bg-indigo-100 text-indigo-800;
+  }
+
+  .badge-secondary {
+    @apply bg-gray-100 text-gray-800;
+  }
+
+  /* Car card specific components */
+  .car-card {
+    @apply bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1;
+  }
+
+  .car-image {
+    @apply h-48 w-full object-cover;
+  }
+
+  .car-details {
+    @apply p-4;
+  }
+
+  .car-title {
+    @apply text-xl font-bold mb-1;
+  }
+
+  .car-price {
+    @apply text-2xl font-bold text-indigo-900;
+  }
+
+  .car-specs {
+    @apply mt-3 grid grid-cols-2 gap-2 text-sm text-gray-600;
+  }
+
+  .car-location {
+    @apply mt-4 text-sm text-gray-500;
+  }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* Animation classes */
+.loader {
+  @apply inline-block w-10 h-10 border-4 border-gray-300 border-t-indigo-900 rounded-full animate-spin;
+}
+
+/* Special layouts */
+.auth-container {
+  @apply flex min-h-screen;
+}
+
+.auth-image {
+  @apply hidden md:block md:w-1/2 bg-center bg-cover;
+}
+
+.auth-form {
+  @apply w-full md:w-1/2 flex items-center justify-center p-8;
+}
+
+.hero-section {
+  @apply relative bg-indigo-900 text-white py-16;
+}
+
+.hero-overlay {
+  @apply absolute inset-0 bg-black bg-opacity-40;
+}
+
+.hero-content {
+  @apply relative z-10 container mx-auto px-6;
+}
+
+/* Media queries
+Only add here if you need something not covered by Tailwind's responsive classes */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

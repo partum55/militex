@@ -8,10 +8,7 @@ def csrf(request):
     """
     Sets the CSRF cookie for the frontend
     """
-    return JsonResponse({
-        'status': 'success',
-        'message': 'CSRF cookie set'
-    })
+    return JsonResponse({'status': 'success',})
 
 def index(request):
     return render(request, 'index.html')

@@ -3,7 +3,9 @@ import AuthService from '../services/auth.service';
 
 const AuthContext = createContext(null);
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  return useContext(AuthContext);
+}
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
