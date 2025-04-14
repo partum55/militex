@@ -4,6 +4,8 @@ from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
 from .models import SellerRating
 from .serializers import UserSerializer, SellerRatingSerializer
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse
 
 User = get_user_model()
 

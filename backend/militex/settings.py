@@ -11,7 +11,12 @@ SECRET_KEY = 'django-insecure-your-secret-key-here'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    'http://127.0.0.1:8000/',
+    'http://localhost:8000/',
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -35,6 +40,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -51,7 +57,7 @@ ROOT_URLCONF = 'militex.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'militex', 'static', 'react'    )],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -140,6 +146,31 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = True
+CSRF_COOKIE_SECURE = False         # Встанови False, якщо розробка ведеться через HTTP
+CSRF_COOKIE_HTTPONLY = False       # Дозволяє читати куку через JS
+CSRF_COOKIE_SAMESITE = 'Lax'       # або 'None' якщо працюєш через різні домени з HTTPS
+
+CSRF_ALLOW_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:3000',
+    "http://localhost:3000",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+]
+
+CORS_ALLOW_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:3000',
+    "http://localhost:3000",
+]
+
+
 CORS_ALLOW_CREDENTIALS = True
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'militex', 'static', 'react', 'static'),
+]

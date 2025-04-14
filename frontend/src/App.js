@@ -1,7 +1,7 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// App.js
+import React, {useEffect} from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-
 // Import context provider
 import { AuthProvider } from './contexts/AuthContext.js';
 import PrivateRoute from './components/common/PrivateRoute.js';
@@ -21,53 +21,48 @@ import Login from './components/auth/Login.js';
 import Register from './components/auth/Register.js';
 import ErrorPage from './components/common/ErrorPage.js';
 import MaintenancePage from './components/common/MaintenancePage.js';
+import getCSRFToken from "./services/csrf";
 
-const App = () => {
+function App() {
+  useEffect(() => {
+    getCSRFToken(); // call once when the app loads
+  }, []);
   const { t } = useTranslation();
 
   return (
     <AuthProvider>
-      <Router>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/buy" element={<BuyPage />} />
-              <Route path="/cars/:id" element={<CarDetailPage />} />
-
-              <Route
-                path="/sell"
-                element={
-                  <PrivateRoute>
-                    <SellPage />
-                  </PrivateRoute>
-                }
-              />
-
-              {/*<Route path="/fundraiser" element={<FundraiserPage />} />*/}
-
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-
-              <Route
-                path="/profile"
-                element={
-                  <PrivateRoute>
-                    <ProfilePage />
-                  </PrivateRoute>
-                }
-              />
-
-              <Route path="/error" element={<ErrorPage />} />
-              <Route path="/maintenance" element={<MaintenancePage />} />
-
-              <Route path="*" element={<ErrorPage />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </Router>
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/buy" element={<BuyPage />} />
+            <Route path="/cars/:id" element={<CarDetailPage />} />
+            <Route
+              path="/sell"
+              element={
+                <PrivateRoute>
+                  <SellPage />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <ProfilePage />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/error" element={<ErrorPage />} />
+            <Route path="/maintenance" element={<MaintenancePage />} />
+            <Route path="*" element={<ErrorPage />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
     </AuthProvider>
   );
 };

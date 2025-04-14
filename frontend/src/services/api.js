@@ -1,92 +1,111 @@
-// frontend/src/services/api.js
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/';
 
-// Create axios instance
+// Функція для отримання cookie
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// Створення інстансу axios
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000, // 30 seconds timeout
+  timeout: 30000, // тайм-аут 30 секунд
+  withCredentials: true, // необхідно для відправки cookie
 });
 
-// Add a request interceptor to add the auth token to requests
+// Додавання interceptor для запитів
 api.interceptors.request.use(
   (config) => {
+    // Отримуємо токен з localStorage
     const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+
+    // Якщо метод POST, PUT, PATCH, DELETE, додаємо CSRF токен
+    const csrfToken = getCookie('csrftoken');
+    if (['post', 'put', 'patch', 'delete'].includes(config.method)) {
+      config.headers['X-CSRFToken'] = csrfToken;
+    }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Add a response interceptor to refresh token if needed
+// Додавання interceptor для обробки відповідей
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Default error object to return
     const customError = {
       message: error.response?.data?.detail || 'An unexpected error occurred',
       status: error.response?.status || 500,
       data: error.response?.data || {},
-      originalError: error
+      originalError: error,
     };
-    
+
     const originalRequest = error.config;
-    
-    // Network error
+
+    // Обробка помилок без відповіді (наприклад, проблеми з мережею)
     if (!error.response) {
       customError.message = 'Network error - please check your connection';
       return Promise.reject(customError);
     }
-    
-    // If the error is 401 and hasn't been retried yet
+
+    // Якщо помилка 401 і запит ще не повторювався
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
-        
-        // Try to get a new token
+
+        // Спроба оновлення токена
         const response = await axios.post(`${API_URL}token/refresh/`, {
           refresh: refreshToken,
         });
-        
-        // If refresh successful, update tokens and retry original request
+
+        // Якщо токен оновлений, повторюємо запит
         const { access } = response.data;
         localStorage.setItem('token', access);
-        
-        // Update the authorization header
+
         originalRequest.headers['Authorization'] = `Bearer ${access}`;
         return api(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
+        // Якщо оновлення токена не вдалося, перенаправляємо на сторінку входу
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        
+
         customError.message = 'Your session has expired. Please log in again.';
         customError.isAuthError = true;
-        
-        // Redirect to login only if in browser environment
+
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
         }
-        
+
         return Promise.reject(customError);
       }
     }
-    
-    // Handle common HTTP error responses
+
+    // Обробка стандартних помилок
     switch (error.response.status) {
       case 400:
         customError.message = 'Invalid request. Please check your data.';
@@ -104,11 +123,10 @@ api.interceptors.response.use(
         customError.message = 'Server error. Please try again later.';
         break;
       default:
-        // Keep default message
         break;
     }
-    
-    // Process validation errors (common in Django REST Framework)
+
+    // Обробка помилок валідації (якщо такі є)
     if (error.response.status === 400 && typeof error.response.data === 'object') {
       try {
         const messages = [];
@@ -119,7 +137,7 @@ api.interceptors.response.use(
             messages.push(`${field}: ${errors}`);
           }
         });
-        
+
         if (messages.length > 0) {
           customError.message = messages.join('\n');
           customError.validationErrors = error.response.data;
@@ -128,41 +146,33 @@ api.interceptors.response.use(
         console.error('Error processing validation errors', e);
       }
     }
-    
+
     return Promise.reject(customError);
   }
 );
 
-/**
- * Global error handler to integrate with a notification system
- * @param {Error} error - Error object from API 
- * @param {Function} notifyFn - Optional notification function
- * @returns {Object} Standardized error object
- */
+// Експортуємо обробник помилок
 export const handleApiError = (error, notifyFn = null) => {
-  // Extract the custom error properties we added in the interceptor
   const message = error.message || 'An unexpected error occurred';
   const status = error.status || 500;
-  
-  // Log the error to console (can be removed in production)
+
   console.error(`API Error (${status}):`, message, error);
-  
-  // If a notification function is provided, use it
+
   if (notifyFn && typeof notifyFn === 'function') {
     notifyFn({
       type: 'error',
       message: message,
       title: `Error ${status}`,
-      duration: 5000
+      duration: 5000,
     });
   }
-  
+
   return {
     message,
     status,
     data: error.data || {},
     validationErrors: error.validationErrors || {},
-    isAuthError: error.isAuthError || false
+    isAuthError: error.isAuthError || false,
   };
 };
 

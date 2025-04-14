@@ -1,4 +1,4 @@
-/* Tailwind Directives */
+/* Tailwind Directives for v4 */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,6 +12,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Rest of your CSS remains the same */
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
