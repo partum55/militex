@@ -40,10 +40,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # This must be first
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -146,30 +145,48 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
-CSRF_COOKIE_SECURE = False         # Встанови False, якщо розробка ведеться через HTTP
-CSRF_COOKIE_HTTPONLY = False       # Дозволяє читати куку через JS
-CSRF_COOKIE_SAMESITE = 'Lax'       # або 'None' якщо працюєш через різні домени з HTTPS
-
-CSRF_ALLOW_ORIGINS = [
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-    'http://127.0.0.1:3000',
-    "http://localhost:3000",
-]
-
+# CSRF and CORS settings
+CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_HTTPONLY = False  # Keep False to allow JS access
+CSRF_COOKIE_SAMESITE = 'Lax'  # Change to 'None' if using cross-domain with HTTPS
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
 ]
 
-CORS_ALLOW_ORIGINS = [
+# CORS settings
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'http://127.0.0.1:3000',
-    "http://localhost:3000",
+    'http://localhost:3000',
 ]
 
+# Allow specific HTTP methods
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
-CORS_ALLOW_CREDENTIALS = True
+# Allow cookies and headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'militex', 'static', 'react', 'static'),

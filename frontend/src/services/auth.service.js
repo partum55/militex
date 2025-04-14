@@ -1,5 +1,23 @@
+// src/services/auth.service.js
 import api from './api';
 import jwt_decode from 'jwt-decode';
+import axios from 'axios'; // Add this import
+
+// Helper function to get CSRF token
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 
 const TOKEN_KEY = 'token';
 const REFRESH_TOKEN_KEY = 'refreshToken';
@@ -8,9 +26,22 @@ const USER_KEY = 'user';
 const AuthService = {
   login: async (username, password) => {
     try {
-      const response = await api.post('token/', {
+      // Get CSRF token first
+      await axios.get('/csrf/', { withCredentials: true });
+      
+      // Get CSRF token from cookie
+      const csrftoken = getCookie('csrftoken');
+      
+      // Make login request with CSRF token
+      const response = await axios.post('/api/token/', {
         username,
         password,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+        },
+        withCredentials: true
       });
 
       if (response.data.access) {
@@ -20,6 +51,7 @@ const AuthService = {
 
       return response.data;
     } catch (error) {
+      console.error('Login error:', error);
       throw error;
     }
   },
@@ -31,7 +63,16 @@ const AuthService = {
   },
 
   register: async (userData) => {
-    return api.post('users/', userData);
+    // Get CSRF token
+    const csrftoken = getCookie('csrftoken');
+    
+    return axios.post('/api/users/', userData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      withCredentials: true
+    });
   },
 
   getCurrentUser: async () => {
@@ -84,8 +125,17 @@ const AuthService = {
         throw new Error('No refresh token available');
       }
 
-      const response = await api.post('token/refresh/', {
+      // Get CSRF token
+      const csrftoken = getCookie('csrftoken');
+      
+      const response = await axios.post('/api/token/refresh/', {
         refresh: refreshToken,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+        },
+        withCredentials: true
       });
 
       if (response.data.access) {
@@ -101,10 +151,6 @@ const AuthService = {
     }
   },
 
-  /**
-   * Ensures a valid token is available
-   * @returns {Promise<string>} Valid access token
-   */
   ensureValidToken: async () => {
     const token = AuthService.getToken();
 
@@ -120,10 +166,6 @@ const AuthService = {
     return token;
   },
 
-  /**
-   * Checks if the user is authenticated with a valid token
-   * @returns {boolean} Authentication status
-   */
   isAuthenticated: () => {
     const token = AuthService.getToken();
     return !!token && AuthService.isTokenValid(token);

@@ -1,8 +1,7 @@
 // App.js
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-// Import context provider
 import { AuthProvider } from './contexts/AuthContext.js';
 import PrivateRoute from './components/common/PrivateRoute.js';
 
@@ -15,19 +14,30 @@ import HomePage from './pages/HomePage.js';
 import BuyPage from './pages/BuyPage.js';
 import SellPage from './pages/SellPage.js';
 import CarDetailPage from './pages/CarDetailPage.js';
-// import FundraiserPage from './pages/FundraiserPage.js';
 import ProfilePage from './components/auth/ProfilePage.js';
 import Login from './components/auth/Login.js';
 import Register from './components/auth/Register.js';
 import ErrorPage from './components/common/ErrorPage.js';
 import MaintenancePage from './components/common/MaintenancePage.js';
-import getCSRFToken from "./services/csrf";
+import axios from 'axios';
 
 function App() {
-  useEffect(() => {
-    getCSRFToken(); // call once when the app loads
-  }, []);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    // Simplified CSRF fetching - directly using axios
+    const fetchCsrf = async () => {
+      try {
+        await axios.get('/csrf/', { withCredentials: true });
+        console.log("CSRF cookie set successfully");
+      } catch (error) {
+        console.warn("CSRF cookie setup failed:", error);
+        // Continue anyway - don't block rendering
+      }
+    };
+    
+    fetchCsrf();
+  }, []);
 
   return (
     <AuthProvider>
@@ -65,6 +75,6 @@ function App() {
       </div>
     </AuthProvider>
   );
-};
+}
 
 export default App;

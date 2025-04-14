@@ -2,6 +2,23 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthService from '../../services/auth.service';
+import axios from 'axios';
+
+// Helper to get CSRF token from cookies
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 
 const Register = () => {
   const { t } = useTranslation();
@@ -85,32 +102,42 @@ const Register = () => {
     try {
       const { confirmPassword, ...userData } = formData;
 
-      const response = await fetch('/api/register/', {
-        method: 'POST',
+      // Get CSRF token
+      const csrftoken = getCookie('csrftoken');
+
+      // Use axios directly for the registration request
+      const response = await axios.post('/api/users/', userData, {
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
         },
-        body: JSON.stringify(userData),
+        withCredentials: true
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        const errorKeys = Object.keys(errorData);
-        if (errorKeys.length > 0) {
-          const firstError = errorData[errorKeys[0]];
-          setError(Array.isArray(firstError) ? firstError[0] : firstError);
-        } else {
-          setError(t('auth.registrationFailed'));
-        }
-        return;
+      if (response.status >= 200 && response.status < 300) {
+        // Optional: call AuthService.login afterwards
+        await AuthService.login(formData.username, formData.password);
+        await AuthService.getCurrentUser();
+        navigate('/');
+      } else {
+        setError(t('auth.registrationFailed'));
       }
-
-      // Optional: call AuthService.login afterwards
-      await AuthService.login(formData.username, formData.password);
-      await AuthService.getCurrentUser();
-      navigate('/');
     } catch (err) {
-      setError(t('auth.registrationFailed'));
+      console.error('Registration error:', err);
+      if (err.response?.data) {
+        // Format Django validation errors
+        const errors = [];
+        Object.entries(err.response.data).forEach(([field, errorMessages]) => {
+          if (Array.isArray(errorMessages)) {
+            errors.push(`${field}: ${errorMessages.join(', ')}`);
+          } else if (typeof errorMessages === 'string') {
+            errors.push(`${field}: ${errorMessages}`);
+          }
+        });
+        setError(errors.join('\n') || t('auth.registrationFailed'));
+      } else {
+        setError(t('auth.registrationFailed'));
+      }
     } finally {
       setLoading(false);
     }
