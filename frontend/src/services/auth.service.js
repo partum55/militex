@@ -45,8 +45,11 @@ const AuthService = {
       });
 
       if (response.data.access) {
-        localStorage.setItem(TOKEN_KEY, response.data.access);
-        localStorage.setItem(REFRESH_TOKEN_KEY, response.data.refresh);
+        localStorage.setItem('token', response.data.access);
+        localStorage.setItem('refreshToken', response.data.refresh);
+
+        // Set the token in the axios default headers
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
       }
 
       return response.data;

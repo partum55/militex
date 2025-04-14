@@ -16,9 +16,9 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    # Catch all routes and serve React's index.html
-    re_path(r'^(?!api/)(?!admin/)(?!static/)(?!media/)(?!csrf/).*$',
-            TemplateView.as_view(template_name='index.html'), name='index'),
+    # Move this catch-all route to the END of the urlpatterns
+    # Ensure this is AFTER all other routes
+    re_path(r'^.*$', TemplateView.as_view(template_name='index.html'), name='index'),
 ]
 
 # For development only - serve static and media files

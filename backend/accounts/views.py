@@ -14,15 +14,6 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    def get_permissions(self):
-        if self.action == 'create':
-            permission_classes = [permissions.AllowAny]
-        elif self.action in ['update', 'partial_update', 'destroy']:
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = [permissions.IsAdminUser]
-        return [permission() for permission in permission_classes]
-
     def get_queryset(self):
         if self.request.user.is_staff:
             return User.objects.all()
