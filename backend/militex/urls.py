@@ -7,11 +7,11 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from django.views.generic import RedirectView
 
 from accounts.views import UserViewSet, SellerRatingViewSet
 from cars.views import CarViewSet
 from fundraiser.views import FundraiserViewSet, DonationViewSet
+from .views import index
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -21,7 +21,7 @@ router.register(r'fundraisers', FundraiserViewSet)
 router.register(r'donations', DonationViewSet)
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='/api/', permanent=True)),
+    path('', index, name='index'),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/accounts/', include('accounts.urls')),
