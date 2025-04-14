@@ -1,0 +1,236 @@
+/* Authentication pages specific styling */
+
+/* Login & Registration layouts */
+.auth-container {
+    @apply flex min-h-screen bg-gray-100;
+  }
+
+  .auth-image-container {
+    @apply w-full md:w-1/2 bg-cover bg-center;
+    background-image: url('/images/military-vehicle.jpg');
+  }
+
+  .auth-form-container {
+    @apply w-full md:w-1/2 flex items-center justify-center p-8;
+  }
+
+  .auth-form-wrapper {
+    @apply w-full max-w-md;
+  }
+
+  .auth-title {
+    @apply text-3xl font-bold text-indigo-900 mb-8;
+  }
+
+  .auth-error {
+    @apply bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4;
+  }
+
+  /* Form elements */
+  .auth-form-group {
+    @apply mb-4;
+  }
+
+  .auth-form-label {
+    @apply block text-gray-700 mb-2;
+  }
+
+  .auth-form-input {
+    @apply w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500;
+  }
+
+  .auth-form-checkbox {
+    @apply mr-2;
+  }
+
+  .auth-form-button {
+    @apply w-full bg-indigo-900 text-white py-2 rounded-lg hover:bg-indigo-800 transition duration-200;
+  }
+
+  .auth-form-button-secondary {
+    @apply w-full bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400 transition duration-200;
+  }
+
+  /* Social login section */
+  .auth-divider {
+    @apply mt-8 text-center;
+  }
+
+  .auth-divider-text {
+    @apply text-gray-600;
+  }
+
+  .auth-social-container {
+    @apply flex justify-center mt-4 space-x-4;
+  }
+
+  .auth-social-button {
+    @apply p-2 rounded-full border hover:bg-gray-100;
+  }
+
+  .auth-social-icon {
+    @apply w-6 h-6;
+  }
+
+  /* Links section */
+  .auth-links {
+    @apply mt-8 text-center;
+  }
+
+  .auth-link-text {
+    @apply text-gray-600;
+  }
+
+  .auth-link {
+    @apply text-indigo-600 hover:underline;
+  }
+
+  /* Multi-step registration */
+  .auth-steps-indicator {
+    @apply flex justify-between mb-6;
+  }
+
+  .auth-step {
+    @apply flex flex-col items-center;
+  }
+
+  .auth-step-number {
+    @apply w-8 h-8 rounded-full flex items-center justify-center mb-1;
+  }
+
+  .auth-step-active {
+    @apply bg-indigo-900 text-white;
+  }
+
+  .auth-step-inactive {
+    @apply bg-gray-300 text-gray-600;
+  }
+
+  .auth-step-completed {
+    @apply bg-green-500 text-white;
+  }
+
+  .auth-step-label {
+    @apply text-xs text-gray-500;
+  }
+
+  .auth-steps-content {
+    @apply mb-6;
+  }
+
+  .auth-step-buttons {
+    @apply flex justify-between mt-6;
+  }
+
+  .auth-step-back {
+    @apply bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition duration-200;
+  }
+
+  .auth-step-next {
+    @apply bg-indigo-900 text-white px-6 py-2 rounded-lg hover:bg-indigo-800 transition duration-200;
+  }
+
+  /* Password strength indicator */
+  .password-strength {
+    @apply mt-1;
+  }
+
+  .password-strength-bar {
+    @apply w-full h-1 bg-gray-200 rounded-full overflow-hidden;
+  }
+
+  .password-strength-progress {
+    @apply h-full transition-all duration-300;
+  }
+
+  .password-strength-weak {
+    @apply bg-red-500 w-1/4;
+  }
+
+  .password-strength-medium {
+    @apply bg-yellow-500 w-2/4;
+  }
+
+  .password-strength-strong {
+    @apply bg-green-500 w-3/4;
+  }
+
+  .password-strength-very-strong {
+    @apply bg-green-600 w-full;
+  }
+
+  .password-strength-label {
+    @apply text-xs text-gray-500 mt-1;
+  }
+
+  /* Password visibility toggle */
+  .password-input-wrapper {
+    @apply relative;
+  }
+
+  .password-toggle {
+    @apply absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer;
+  }
+
+  /* Phone input with country code */
+  .phone-input-wrapper {
+    @apply flex;
+  }
+
+  .country-code-select {
+    @apply w-20 px-2 py-2 border border-r-0 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500;
+  }
+
+  .phone-input {
+    @apply flex-1 px-4 py-2 border border-l-0 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-indigo-500;
+  }
+
+  /* Verification code input */
+  .verification-code-container {
+    @apply flex justify-between mb-6;
+  }
+
+  .verification-code-input {
+    @apply w-12 h-12 text-center text-xl border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500;
+  }
+
+  /* Profile image upload */
+  .profile-image-upload {
+    @apply mt-4 flex flex-col items-center;
+  }
+
+  .profile-image-preview {
+    @apply w-24 h-24 rounded-full bg-gray-200 overflow-hidden mb-2;
+  }
+
+  .profile-image {
+    @apply w-full h-full object-cover;
+  }
+
+  .profile-image-button {
+    @apply text-sm text-indigo-600 hover:underline cursor-pointer;
+  }
+
+  .profile-image-input {
+    @apply hidden;
+  }
+
+  /* Forgot password */
+  .forgot-password-link {
+    @apply text-sm text-indigo-600 hover:underline;
+  }
+
+  .reset-password-success {
+    @apply bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .auth-image-container {
+      @apply hidden;
+    }
+
+    .auth-form-container {
+      @apply w-full;
+    }
+  }
