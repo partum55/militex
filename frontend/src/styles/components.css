@@ -1,0 +1,406 @@
+/* Components CSS - Additional styling for specific components */
+
+/* Header styling */
+.header {
+    @apply bg-indigo-900 text-white py-3;
+  }
+
+  .logo {
+    @apply h-8 w-auto;
+  }
+
+  .mobile-menu-button {
+    @apply md:hidden p-2 rounded-md text-gray-200 hover:text-white hover:bg-indigo-800;
+  }
+
+  .user-menu {
+    @apply relative;
+  }
+
+  .user-menu-button {
+    @apply flex items-center text-gray-200 hover:text-white;
+  }
+
+  .user-menu-dropdown {
+    @apply absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10;
+  }
+
+  .user-menu-item {
+    @apply block px-4 py-2 text-gray-800 hover:bg-gray-100;
+  }
+
+  /* Language selector */
+  .lang-selector {
+    @apply relative;
+  }
+
+  .lang-button {
+    @apply flex items-center text-gray-200 hover:text-white;
+  }
+
+  .lang-dropdown {
+    @apply absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10;
+  }
+
+  .lang-option {
+    @apply flex items-center px-4 py-2 text-gray-800 hover:bg-gray-100;
+  }
+
+  .lang-option.active {
+    @apply bg-indigo-50 text-indigo-900;
+  }
+
+  .lang-check {
+    @apply mr-2;
+  }
+
+  /* Car listing styles */
+  .car-filters {
+    @apply bg-white rounded-lg shadow-md p-4;
+  }
+
+  .filter-section {
+    @apply mb-6;
+  }
+
+  .filter-title {
+    @apply font-medium text-gray-700 mb-2;
+  }
+
+  .range-slider {
+    @apply w-full h-2 bg-gray-200 rounded-full appearance-none;
+  }
+
+  .range-slider::-webkit-slider-thumb {
+    @apply appearance-none w-4 h-4 rounded-full bg-indigo-900 cursor-pointer;
+  }
+
+  .checkbox-group {
+    @apply space-y-2;
+  }
+
+  .checkbox-label {
+    @apply flex items-center text-sm text-gray-700;
+  }
+
+  .chip {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800;
+  }
+
+  .chip-closable {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800;
+  }
+
+  .chip-close {
+    @apply ml-1.5 rounded-full hover:bg-gray-200 inline-flex items-center justify-center;
+  }
+
+  /* Search and pagination */
+  .search-container {
+    @apply relative mb-6;
+  }
+
+  .search-input {
+    @apply w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+  }
+
+  .search-icon {
+    @apply absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 pointer-events-none;
+  }
+
+  .pagination {
+    @apply flex justify-between items-center mt-8;
+  }
+
+  .page-button {
+    @apply px-4 py-2 rounded;
+  }
+
+  .page-button-active {
+    @apply bg-indigo-900 text-white hover:bg-indigo-800;
+  }
+
+  .page-button-disabled {
+    @apply bg-gray-300 text-gray-500 cursor-not-allowed;
+  }
+
+  .page-info {
+    @apply text-gray-600;
+  }
+
+  /* Car detail page */
+  .car-gallery {
+    @apply bg-gray-200 h-96;
+  }
+
+  .gallery-main {
+    @apply w-full h-full object-cover;
+  }
+
+  .gallery-thumbs {
+    @apply p-2 flex space-x-2 overflow-x-auto;
+  }
+
+  .gallery-thumb {
+    @apply w-20 h-16 object-cover rounded cursor-pointer;
+  }
+
+  .gallery-thumb.active {
+    @apply ring-2 ring-indigo-900;
+  }
+
+  .car-specs {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+  }
+
+  .spec-group {
+    @apply p-4 bg-gray-50 rounded-lg;
+  }
+
+  .spec-title {
+    @apply font-medium text-indigo-900 mb-2;
+  }
+
+  .spec-item {
+    @apply flex justify-between;
+  }
+
+  .spec-label {
+    @apply text-gray-600;
+  }
+
+  .spec-value {
+    @apply font-medium;
+  }
+
+  /* Sell car form steps */
+  .form-steps {
+    @apply mb-8;
+  }
+
+  .steps-container {
+    @apply flex items-center;
+  }
+
+  .step {
+    @apply w-8 h-8 rounded-full flex items-center justify-center;
+  }
+
+  .step-active {
+    @apply bg-indigo-900 text-white;
+  }
+
+  .step-inactive {
+    @apply bg-gray-300 text-gray-600;
+  }
+
+  .step-line {
+    @apply h-1 flex-1;
+  }
+
+  .step-line-active {
+    @apply bg-indigo-900;
+  }
+
+  .step-line-inactive {
+    @apply bg-gray-300;
+  }
+
+  /* Image upload */
+  .upload-area {
+    @apply border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition;
+  }
+
+  .upload-area-active {
+    @apply border-indigo-500 bg-indigo-50;
+  }
+
+  .upload-area-inactive {
+    @apply border-gray-300 hover:border-indigo-500;
+  }
+
+  .preview-grid {
+    @apply mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4;
+  }
+
+  .preview-item {
+    @apply relative;
+  }
+
+  .preview-image {
+    @apply w-full h-24 object-cover rounded;
+  }
+
+  .preview-remove {
+    @apply absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center;
+  }
+
+  /* Modal styling */
+  .modal-backdrop {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+  }
+
+  .modal {
+    @apply bg-white rounded-lg shadow-xl w-full max-w-md max-h-90vh overflow-auto;
+  }
+
+  .modal-header {
+    @apply flex justify-between items-center p-4 border-b;
+  }
+
+  .modal-title {
+    @apply text-xl font-bold;
+  }
+
+  .modal-close {
+    @apply text-gray-500 hover:text-gray-700;
+  }
+
+  .modal-body {
+    @apply p-6;
+  }
+
+  .modal-footer {
+    @apply flex justify-end gap-2 p-4 border-t;
+  }
+
+  /* Error and maintenance pages */
+  .status-container {
+    @apply flex items-center justify-center min-h-screen bg-gray-50;
+  }
+
+  .status-content {
+    @apply text-center;
+  }
+
+  .status-icon {
+    @apply text-indigo-900 mb-6;
+  }
+
+  .status-title {
+    @apply text-3xl font-bold text-gray-900 mb-4;
+  }
+
+  .status-message {
+    @apply text-lg text-gray-600 mb-8;
+  }
+
+  .status-actions {
+    @apply flex justify-center gap-4;
+  }
+
+  /* Profile page */
+  .profile-header {
+    @apply bg-indigo-900 text-white py-12;
+  }
+
+  .profile-tabs {
+    @apply flex border-b;
+  }
+
+  .profile-tab {
+    @apply px-6 py-3 text-sm font-medium;
+  }
+
+  .profile-tab-active {
+    @apply border-b-2 border-indigo-900 text-indigo-900;
+  }
+
+  .profile-tab-inactive {
+    @apply text-gray-500 hover:text-indigo-900;
+  }
+
+  /* Car condition badges */
+  .condition-badge {
+    @apply px-2 py-1 rounded-full text-sm font-medium;
+  }
+
+  .condition-new {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .condition-used {
+    @apply bg-blue-100 text-blue-800;
+  }
+
+  .condition-damaged {
+    @apply bg-amber-100 text-amber-800;
+  }
+
+  /* Fundraiser components */
+  .fundraiser-card {
+    @apply bg-white rounded-lg shadow-md overflow-hidden;
+  }
+
+  .fundraiser-image {
+    @apply h-48 bg-gray-200;
+  }
+
+  .fundraiser-body {
+    @apply p-6;
+  }
+
+  .fundraiser-title {
+    @apply text-xl font-bold text-indigo-900 mb-2;
+  }
+
+  .fundraiser-progress {
+    @apply mb-4;
+  }
+
+  .progress-bar {
+    @apply w-full h-2.5 bg-gray-200 rounded-full;
+  }
+
+  .progress-fill {
+    @apply h-2.5 rounded-full bg-indigo-900;
+  }
+
+  .progress-stats {
+    @apply flex justify-between mt-2 text-sm;
+  }
+
+  .progress-current {
+    @apply font-medium;
+  }
+
+  .progress-goal {
+    @apply text-gray-500;
+  }
+
+  .fundraiser-description {
+    @apply text-gray-600 mb-6 line-clamp-3;
+  }
+
+  /* Home page sections */
+  .hero {
+    @apply relative bg-indigo-900 text-white py-24;
+  }
+
+  .mission-section {
+    @apply py-16 container mx-auto px-6;
+  }
+
+  .process-section {
+    @apply py-16 bg-gray-100;
+  }
+
+  .step-item {
+    @apply bg-white p-8 rounded-lg shadow-md;
+  }
+
+  .step-number {
+    @apply w-12 h-12 bg-indigo-900 text-white rounded-full flex items-center justify-center text-xl font-bold mb-4;
+  }
+
+  .step-title {
+    @apply text-xl font-bold text-indigo-900 mb-2;
+  }
+
+  .cta-section {
+    @apply py-16 bg-indigo-900 text-white;
+  }
+
+  .featured-section {
+    @apply py-16 container mx-auto px-6;
+  }
