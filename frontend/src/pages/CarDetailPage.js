@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import CarService from '../services/car.service';
+import CarCard from '../components/cars/CarCard';
 
 const CarDetailPage = () => {
   const { id } = useParams();
   const { t } = useTranslation();
   const [car, setCar] = useState(null);
+  const [similarCars, setSimilarCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeImage, setActiveImage] = useState(0);
@@ -18,6 +20,11 @@ const CarDetailPage = () => {
         setLoading(true);
         const data = await CarService.getCarById(id);
         setCar(data);
+
+        // Fetch similar cars after getting the car details
+        if (data) {
+          fetchSimilarCars(data);
+        }
 
         // Scroll to top when car data is loaded
         window.scrollTo(0, 0);
@@ -31,6 +38,31 @@ const CarDetailPage = () => {
 
     fetchCarDetails();
   }, [id]);
+
+  const fetchSimilarCars = async (carData) => {
+    try {
+      // Define filter criteria based on the current car
+      const filters = {
+        make: carData.make, // Same make
+        vehicle_type: carData.vehicle_type, // Same vehicle type
+        min_price: Math.max(0, carData.price * 0.7), // Price range: 70-130% of current car
+        max_price: carData.price * 1.3,
+      };
+
+      // Exclude the current car from results
+      const response = await CarService.getAllCars(filters);
+
+      // Filter out the current car and limit to 3 similar cars
+      const filteredCars = response.results
+        .filter(similarCar => similarCar.id !== parseInt(id))
+        .slice(0, 3);
+
+      setSimilarCars(filteredCars);
+    } catch (err) {
+      console.error("Error fetching similar cars:", err);
+      // Don't set an error state here, as it's not critical functionality
+    }
+  };
 
   if (loading) {
     return (
@@ -165,13 +197,20 @@ const CarDetailPage = () => {
               {/* Contact Seller Button */}
               <div className="mt-6">
                 <button
-                  onClick={() => setShowContact(!showContact)}
+                  onClick={() => {
+                    if (car.is_imported && car.original_url) {
+                      window.open(car.original_url, '_blank');
+                    } else {
+                      setShowContact(!showContact);
+                    }
+                  }}
                   className="w-full bg-indigo-900 text-white py-3 rounded-lg hover:bg-indigo-800 transition duration-200"
                 >
-                  {showContact ? t('cars.hideContact') : t('cars.contactSeller')}
+                  {car.is_imported ? t('cars.viewOriginalAd') : (showContact ? t('cars.hideContact') : t('cars.contactSeller'))}
                 </button>
 
-                {showContact && (
+                {/* Only show this section for cars listed directly on the site */}
+                {!car.is_imported && showContact && (
                   <div className="mt-4 p-4 bg-gray-100 rounded-lg">
                     <p className="font-medium">{car.seller_username}</p>
                     {car.seller_phone && (
@@ -292,72 +331,58 @@ const CarDetailPage = () => {
         </div>
 
         {/* Related Cars */}
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold text-indigo-900 mb-4">{t('cars.similarVehicles')}</h2>
+        {similarCars.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold text-indigo-900 mb-4">{t('cars.similarVehicles')}</h2>
 
-          {/* This would be populated dynamically in a real implementation */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="h-48 bg-gray-200">
-                <img
-                  src="/images/car-placeholder-1.jpg"
-                  alt="Similar Car 1"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-lg font-bold text-indigo-900">Similar Vehicle 1</h3>
-                <p className="text-gray-600">25,000 km</p>
-                <div className="mt-2 flex justify-between items-center">
-                  <span className="text-xl font-bold text-indigo-900">$22,500</span>
-                  <a href="#" className="text-indigo-600 hover:underline">
-                    {t('common.viewDetails')}
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="h-48 bg-gray-200">
-                <img
-                  src="/images/car-placeholder-2.jpg"
-                  alt="Similar Car 2"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-lg font-bold text-indigo-900">Similar Vehicle 2</h3>
-                <p className="text-gray-600">32,000 km</p>
-                <div className="mt-2 flex justify-between items-center">
-                  <span className="text-xl font-bold text-indigo-900">$24,900</span>
-                  <a href="#" className="text-indigo-600 hover:underline">
-                    {t('common.viewDetails')}
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="h-48 bg-gray-200">
-                <img
-                  src="/images/car-placeholder-3.jpg"
-                  alt="Similar Car 3"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-lg font-bold text-indigo-900">Similar Vehicle 3</h3>
-                <p className="text-gray-600">19,800 km</p>
-                <div className="mt-2 flex justify-between items-center">
-                  <span className="text-xl font-bold text-indigo-900">$26,300</span>
-                  <a href="#" className="text-indigo-600 hover:underline">
-                    {t('common.viewDetails')}
-                  </a>
-                </div>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {similarCars.map(similarCar => (
+                <Link
+                  key={similarCar.id}
+                  to={`/cars/${similarCar.id}`}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <div className="h-48 bg-gray-200">
+                    {similarCar.images && similarCar.images.length > 0 ? (
+                      <img
+                        src={similarCar.images[0].image}
+                        alt={`${similarCar.year} ${similarCar.make} ${similarCar.model}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                        <span className="text-gray-400">No Image</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-bold text-indigo-900">
+                      {similarCar.year} {similarCar.make} {similarCar.model}
+                    </h3>
+                    <p className="text-gray-600">{similarCar.mileage.toLocaleString()} km</p>
+                    <div className="mt-2 flex justify-between items-center">
+                      <span className="text-xl font-bold text-indigo-900">${similarCar.price.toLocaleString()}</span>
+                      <span className="text-indigo-600 hover:underline">
+                        {t('common.viewDetails')}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
-        </div>
+        )}
+
+        {/* No similar cars message */}
+        {similarCars.length === 0 && (
+          <div className="mt-8 p-6 bg-gray-50 rounded-lg text-center">
+            <h2 className="text-2xl font-bold text-indigo-900 mb-4">{t('cars.similarVehicles')}</h2>
+            <p className="text-gray-600">{t('cars.noSimilarVehicles')}</p>
+            <Link to="/buy" className="inline-block mt-4 text-indigo-600 hover:underline">
+              {t('cars.browseAllVehicles')}
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

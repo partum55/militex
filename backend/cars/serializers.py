@@ -26,7 +26,8 @@ class CarSerializer(serializers.ModelSerializer):
             'country', 'city', 'price', 'negotiable',
             'engine_size', 'engine_power', 'description',
             'created_at', 'updated_at', 'seller', 'seller_username',
-            'seller_phone', 'images', 'uploaded_images'
+            'seller_phone', 'images', 'uploaded_images',
+            'original_url', 'is_imported'
         ]
         read_only_fields = ['seller', 'created_at', 'updated_at']
 
