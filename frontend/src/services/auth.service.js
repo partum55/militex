@@ -26,6 +26,12 @@ const USER_KEY = 'user';
 const AuthService = {
   login: async (username, password) => {
     try {
+      // Get CSRF token first
+      await axios.get('/csrf/', { withCredentials: true });
+
+      // Get CSRF token from cookie
+      const csrftoken = getCookie('csrftoken');
+
       // Make login request with CSRF token
       const response = await axios.post('/api/token/', {
         username,
@@ -33,6 +39,7 @@ const AuthService = {
       }, {
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
         },
         withCredentials: true
       });
@@ -41,11 +48,17 @@ const AuthService = {
         localStorage.setItem(TOKEN_KEY, response.data.access);
         localStorage.setItem(REFRESH_TOKEN_KEY, response.data.refresh);
 
-        // Set the token in axios default headers
-        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+        // Set the token in the axios default headers
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+
+        // Fetch user data immediately after login
+        const userData = await api.get('users/me/');
+        localStorage.setItem(USER_KEY, JSON.stringify(userData.data));
+
+        return userData.data;
       }
 
-      return response.data;
+      return null;
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -56,36 +69,35 @@ const AuthService = {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    // Remove Authorization header
-    delete api.defaults.headers.common['Authorization'];
+
+    // Remove the Authorization header
+    delete axios.defaults.headers.common['Authorization'];
   },
 
   register: async (userData) => {
-    try {
-      // First ensure we get a fresh CSRF token
-      await axios.get('/csrf/', { withCredentials: true });
+    // Get CSRF token
+    const csrftoken = getCookie('csrftoken');
 
-      // Get CSRF token from cookie
-      const csrftoken = getCookie('csrftoken');
-
-      // Make registration request
-      const response = await axios.post('/api/users/', userData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken
-        },
-        withCredentials: true
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
-    }
+    return axios.post('/api/users/', userData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      withCredentials: true
+    });
   },
 
   getCurrentUser: async () => {
     try {
+      // Check if we have a token first
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Set authorization header
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
       const response = await api.get('users/me/');
       localStorage.setItem(USER_KEY, JSON.stringify(response.data));
       return response.data;
@@ -134,19 +146,25 @@ const AuthService = {
         throw new Error('No refresh token available');
       }
 
+      // Get CSRF token
+      const csrftoken = getCookie('csrftoken');
+
       const response = await axios.post('/api/token/refresh/', {
         refresh: refreshToken,
       }, {
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
         },
         withCredentials: true
       });
 
       if (response.data.access) {
         localStorage.setItem(TOKEN_KEY, response.data.access);
-        // Update Authorization header
-        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+
+        // Update authorization header
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+
         return response.data.access;
       } else {
         throw new Error('Access token not received');

@@ -22,9 +22,26 @@ export const AuthProvider = ({ children }) => {
         // Check for valid token
         if (AuthService.isAuthenticated()) {
           // Get user data
-          const userData = await AuthService.getCurrentUser();
-          setCurrentUser(userData);
-          setIsAuthenticated(true);
+          try {
+            const userData = await AuthService.getCurrentUser();
+            setCurrentUser(userData);
+            setIsAuthenticated(true);
+          } catch (userError) {
+            console.error('Error fetching user data:', userError);
+
+            // Try to refresh token
+            try {
+              await AuthService.refreshToken();
+              const userData = await AuthService.getCurrentUser();
+              setCurrentUser(userData);
+              setIsAuthenticated(true);
+            } catch (refreshError) {
+              console.error('Token refresh failed:', refreshError);
+              AuthService.logout();
+              setCurrentUser(null);
+              setIsAuthenticated(false);
+            }
+          }
         } else {
           // Try to refresh token
           try {
@@ -59,16 +76,14 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const response = await AuthService.login(username, password);
-      const userData = await AuthService.getCurrentUser();
-
+      const userData = await AuthService.login(username, password);
       setCurrentUser(userData);
       setIsAuthenticated(true);
 
-      return response;
+      return userData;
     } catch (err) {
       console.error('Login error:', err);
-      setError(err);
+      setError(err.response?.data?.detail || 'Failed to login. Please check your credentials.');
       throw err;
     } finally {
       setLoading(false);
@@ -82,11 +97,10 @@ export const AuthProvider = ({ children }) => {
       setError(null);
 
       const response = await AuthService.register(userData);
-
-      return response;
+      return response.data;
     } catch (err) {
       console.error('Registration error:', err);
-      setError(err);
+      setError(err.response?.data || 'Failed to register. Please try again.');
       throw err;
     } finally {
       setLoading(false);
@@ -112,7 +126,7 @@ export const AuthProvider = ({ children }) => {
       return response;
     } catch (err) {
       console.error('Profile update error:', err);
-      setError(err);
+      setError(err.response?.data || 'Failed to update profile. Please try again.');
       throw err;
     } finally {
       setLoading(false);
@@ -122,9 +136,20 @@ export const AuthProvider = ({ children }) => {
   // Check token validity periodically (every 5 minutes)
   useEffect(() => {
     const checkTokenInterval = setInterval(() => {
-      if (currentUser && !AuthService.isAuthenticated()) {
+      if (isAuthenticated && !AuthService.isAuthenticated()) {
         // Token expired, try to refresh
         AuthService.refreshToken()
+          .then(() => {
+            // Refresh successful, update user info
+            AuthService.getCurrentUser()
+              .then(userData => {
+                setCurrentUser(userData);
+              })
+              .catch(err => {
+                console.error('Failed to get current user after token refresh:', err);
+                logout();
+              });
+          })
           .catch(() => {
             // Refresh failed, logout
             logout();
@@ -135,7 +160,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       clearInterval(checkTokenInterval);
     };
-  }, [currentUser, logout]);
+  }, [isAuthenticated, logout]);
 
   // Context value
   const value = {

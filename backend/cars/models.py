@@ -64,6 +64,10 @@ class Car(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Original listing data
+    original_url = models.URLField(_('Original URL'), blank=True, null=True)
+    is_imported = models.BooleanField(_('Is Imported'), default=False)
+
     def __str__(self):
         return f"{self.year} {self.make} {self.model}"
 

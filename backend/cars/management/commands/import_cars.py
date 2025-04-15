@@ -66,6 +66,7 @@ class Command(BaseCommand):
             description TEXT,
             condition TEXT,
             transmission TEXT,
+            original_url TEXT,
             seller_id INTEGER
         )
         ''')
@@ -181,7 +182,8 @@ class Command(BaseCommand):
                 "price": price,
                 "description": description,
                 "condition": condition,
-                "transmission": transmission
+                "transmission": transmission,
+                "original_url": url  # Store the original URL
             }
 
         except Exception as e:
@@ -213,8 +215,8 @@ class Command(BaseCommand):
 
         for car in cars_data:
             cursor.execute('''
-            INSERT INTO cars (name, year, fuel_type, body_type, mileage, price, description, condition, transmission, seller_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO cars (name, year, fuel_type, body_type, mileage, price, description, condition, transmission, original_url, seller_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 car['name'],
                 car['year'],
@@ -225,6 +227,7 @@ class Command(BaseCommand):
                 car['description'],
                 car['condition'],
                 car['transmission'],
+                car['original_url'],  # Store the original URL
                 seller_id
             ))
 
@@ -335,6 +338,8 @@ class Command(BaseCommand):
                         'negotiable': True,  # Default to negotiable
                         'description': car_data['description'],
                         'seller': admin_user,
+                        'original_url': car_data['original_url'],  # Store the original URL
+                        'is_imported': True,  # Mark as imported
                     }
                 )
 
