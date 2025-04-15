@@ -257,11 +257,11 @@ const CarDetailPage = () => {
                     <h3 className="font-medium text-indigo-900 mb-2">{t('cars.general')}</h3>
                     <div className="space-y-2">
                       <p className="flex justify-between">
-                        <span className="text-gray-600">{t('cars.make')}:</span>
+                        <span className="text-gray-600">{t('cars.carMake')}:</span>
                         <span className="font-medium">{car.make}</span>
                       </p>
                       <p className="flex justify-between">
-                        <span className="text-gray-600">{t('cars.model')}:</span>
+                        <span className="text-gray-600">{t('cars.carModel')}:</span>
                         <span className="font-medium">{car.model}</span>
                       </p>
                       <p className="flex justify-between">

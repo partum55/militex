@@ -51,6 +51,7 @@
     "viewAllListings": "View All Listings"
   },
   "cars": {
+    "details": "Details",
     "mileage": "km",
     "carMake": "Make",
     "carModel": "Model",
