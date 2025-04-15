@@ -1,7 +1,7 @@
 // src/services/auth.service.js
 import api from './api';
 import jwt_decode from 'jwt-decode';
-import axios from 'axios'; // Add this import
+import axios from 'axios';
 
 // Helper function to get CSRF token
 function getCookie(name) {
@@ -26,12 +26,6 @@ const USER_KEY = 'user';
 const AuthService = {
   login: async (username, password) => {
     try {
-      // Get CSRF token first
-      await axios.get('/csrf/', { withCredentials: true });
-      
-      // Get CSRF token from cookie
-      const csrftoken = getCookie('csrftoken');
-      
       // Make login request with CSRF token
       const response = await axios.post('/api/token/', {
         username,
@@ -39,17 +33,16 @@ const AuthService = {
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken
         },
         withCredentials: true
       });
 
       if (response.data.access) {
-        localStorage.setItem('token', response.data.access);
-        localStorage.setItem('refreshToken', response.data.refresh);
+        localStorage.setItem(TOKEN_KEY, response.data.access);
+        localStorage.setItem(REFRESH_TOKEN_KEY, response.data.refresh);
 
-        // Set the token in the axios default headers
-        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+        // Set the token in axios default headers
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
       }
 
       return response.data;
@@ -63,19 +56,32 @@ const AuthService = {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    // Remove Authorization header
+    delete api.defaults.headers.common['Authorization'];
   },
 
   register: async (userData) => {
-    // Get CSRF token
-    const csrftoken = getCookie('csrftoken');
-    
-    return axios.post('/api/users/', userData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken
-      },
-      withCredentials: true
-    });
+    try {
+      // First ensure we get a fresh CSRF token
+      await axios.get('/csrf/', { withCredentials: true });
+
+      // Get CSRF token from cookie
+      const csrftoken = getCookie('csrftoken');
+
+      // Make registration request
+      const response = await axios.post('/api/users/', userData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+        },
+        withCredentials: true
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
   },
 
   getCurrentUser: async () => {
@@ -128,21 +134,19 @@ const AuthService = {
         throw new Error('No refresh token available');
       }
 
-      // Get CSRF token
-      const csrftoken = getCookie('csrftoken');
-      
       const response = await axios.post('/api/token/refresh/', {
         refresh: refreshToken,
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken
         },
         withCredentials: true
       });
 
       if (response.data.access) {
         localStorage.setItem(TOKEN_KEY, response.data.access);
+        // Update Authorization header
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
         return response.data.access;
       } else {
         throw new Error('Access token not received');

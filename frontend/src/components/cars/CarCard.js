@@ -6,21 +6,26 @@ const CarCard = ({ car }) => {
   const { t } = useTranslation();
   
   // Get the primary image or use a placeholder
-  const primaryImage = car.images.find(img => img.is_primary)?.image || 
-                       (car.images.length > 0 ? car.images[0].image : '/images/car-placeholder.jpg');
+  const getPrimaryImage = () => {
+    if (car.images && car.images.length > 0) {
+      const primaryImage = car.images.find(img => img.is_primary);
+      return primaryImage ? primaryImage.image : car.images[0].image;
+    }
+    return '/images/car-placeholder.jpg';
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg">
       <Link to={`/cars/${car.id}`} className="flex flex-col md:flex-row">
         {/* Car Image */}
         <div className="md:w-1/3">
-          <img 
-            src={primaryImage} 
-            alt={`${car.year} ${car.make} ${car.model}`} 
+          <img
+            src={getPrimaryImage()}
+            alt={`${car.year} ${car.make} ${car.model}`}
             className="w-full h-48 md:h-full object-cover"
           />
         </div>
-        
+
         {/* Car Details */}
         <div className="p-4 md:w-2/3">
           <div className="flex justify-between items-start">
@@ -36,7 +41,7 @@ const CarCard = ({ car }) => {
               ${car.price.toLocaleString()}
             </div>
           </div>
-          
+
           {/* Car Specs */}
           <div className="mt-4 grid grid-cols-2 gap-y-2 text-sm">
             <div>
@@ -56,12 +61,12 @@ const CarCard = ({ car }) => {
               <span className="font-medium">{car.vehicle_type}</span>
             </div>
           </div>
-          
+
           {/* Car Description (truncated) */}
           <p className="mt-3 text-gray-600 line-clamp-2">
             {car.description}
           </p>
-          
+
           {/* Location and Seller */}
           <div className="mt-3 flex justify-between text-sm">
             <div className="text-gray-500">
