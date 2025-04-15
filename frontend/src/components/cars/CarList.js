@@ -1,7 +1,8 @@
-import React, { Component } from 'react';
-import { withTranslation } from 'react-i18next';
+import React, { Component, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import CarFilters from './CarFilters';
 import CarCard from './CarCard';
+import CarService from '../../services/car.service';
 
 const CarList = () => {
   const { t } = useTranslation();
@@ -18,29 +19,28 @@ const CarList = () => {
 
   useEffect(() => {
     fetchCars();
-  }, [filters, currentPage]);
+  }, [JSON.stringify(filters), currentPage]);
 
   const fetchCars = async () => {
     setLoading(true);
     try {
-      // Combine filters with pagination
       const params = {
         ...filters,
         page: currentPage,
       };
-      
+  
       const response = await CarService.getAllCars(params);
-      setCars(response.results);
+      setCars(response.results || response);
       setPagination({
-        count: response.count,
-        next: response.next,
-        previous: response.previous,
+        count: response.count || (response.length ?? 0),
+        next: response.next || null,
+        previous: response.previous || null,
       });
     } catch (error) {
       setError('Failed to fetch cars. Please try again later.');
       console.error(error);
     } finally {
-      this.isFetching = false;
+      setLoading(false); // ✅ виправлення
     }
   };
 

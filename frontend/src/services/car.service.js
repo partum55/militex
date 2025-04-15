@@ -2,8 +2,8 @@
 import api from './api';
 
 const CarService = {
-  // Get all cars with optional filters
-  etAllCars: async (params = {}) => {
+  // Get all cars with optional filters (фільтрація)
+  getAllCars: async (params = {}) => {
     try {
       const response = await api.get('cars/', { params });
       return response.data;
@@ -13,20 +13,24 @@ const CarService = {
     }
   },
 
-  importFromAutoria: async (limit = 5) => {
+  // Import cars from Auto.ria (тільки для адмінів)
+  importFromAutoria: async (limit = 10) => {
     try {
       const response = await api.post('cars/import_from_autoria/', { limit });
       return response.data;
     } catch (error) {
+      console.error('Error importing from Auto.ria:', error);
       throw error;
     }
   },
 
+  // Get car by ID
   getCarById: async (id) => {
     try {
       const response = await api.get(`cars/${id}/`);
       return response.data;
     } catch (error) {
+      console.error(`Error fetching car with ID ${id}:`, error);
       throw error;
     }
   },
@@ -34,27 +38,21 @@ const CarService = {
   // Create a new car listing
   createCar: async (carData) => {
     try {
-      // For file uploads, use FormData
       const formData = new FormData();
-
-      // Add car data to formData
       Object.keys(carData).forEach((key) => {
         if (key !== 'uploaded_images') {
           formData.append(key, carData[key]);
         }
       });
 
-      // Add images to formData
-      if (carData.uploaded_images && carData.uploaded_images.length > 0) {
+      if (carData.uploaded_images?.length) {
         carData.uploaded_images.forEach((image) => {
           formData.append('uploaded_images', image);
         });
       }
 
       const response = await api.post('cars/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;
     } catch (error) {
@@ -66,25 +64,21 @@ const CarService = {
   // Update an existing car listing
   updateCar: async (id, carData) => {
     try {
-      // Similar to createCar, use FormData for updates with images
       const formData = new FormData();
-
       Object.keys(carData).forEach((key) => {
         if (key !== 'uploaded_images') {
           formData.append(key, carData[key]);
         }
       });
 
-      if (carData.uploaded_images && carData.uploaded_images.length > 0) {
+      if (carData.uploaded_images?.length) {
         carData.uploaded_images.forEach((image) => {
           formData.append('uploaded_images', image);
         });
       }
 
       const response = await api.patch(`cars/${id}/`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;
     } catch (error) {
@@ -104,7 +98,7 @@ const CarService = {
     }
   },
 
-  // Get user's car listings
+  // Get user's own listings
   getMyListings: async () => {
     try {
       const response = await api.get('cars/my_listings/');
@@ -114,14 +108,12 @@ const CarService = {
       throw error;
     }
   },
-  
-  // Search cars by query
+
+  // Search cars by keyword
   searchCars: async (searchQuery) => {
     try {
-      const response = await api.get('cars/', { 
-        params: { 
-          search: searchQuery 
-        } 
+      const response = await api.get('cars/', {
+        params: { search: searchQuery },
       });
       return response.data;
     } catch (error) {
@@ -129,35 +121,33 @@ const CarService = {
       throw error;
     }
   },
-  
-  // Filter cars by multiple criteria
+
+  // Filter cars with multiple criteria
   filterCars: async (filters) => {
     try {
-      const response = await api.get('cars/', { 
-        params: filters 
-      });
+      const response = await api.get('cars/', { params: filters });
       return response.data;
     } catch (error) {
       console.error('Error filtering cars:', error);
       throw error;
     }
   },
-  
-  // Get featured cars for homepage
+
+  // Get featured (latest) cars
   getFeaturedCars: async (limit = 3) => {
     try {
-      const response = await api.get('cars/', { 
+      const response = await api.get('cars/', {
         params: {
           limit: limit,
-          ordering: '-created_at'  // Get newest cars
-        }
+          ordering: '-created_at',
+        },
       });
       return response.data.results;
     } catch (error) {
       console.error('Error fetching featured cars:', error);
       throw error;
     }
-  }
+  },
 };
 
 export default CarService;

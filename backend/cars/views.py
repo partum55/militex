@@ -5,7 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Car
 from .serializers import CarSerializer
 from .filters import CarFilter
-from .parser_integration import import_cars_from_autoria
+from .parser_integration import import_cars_sync
 
 
 
@@ -22,7 +22,7 @@ class IsAdminUser(permissions.BasePermission):
 class CarViewSet(viewsets.ModelViewSet):
     queryset = Car.objects.all()
     serializer_class = CarSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = CarFilter
     search_fields = ['make', 'model', 'description']
@@ -50,7 +50,7 @@ class CarViewSet(viewsets.ModelViewSet):
         limit = int(request.data.get('limit', 10))
         
         try:
-            count = import_cars_from_autoria(limit=limit, admin_user_id=request.user.id)
+            count = import_cars_sync(limit=limit, admin_user_id=request.user.id)
             return Response({'status': 'success', 'imported': count}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)

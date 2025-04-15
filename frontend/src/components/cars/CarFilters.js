@@ -27,7 +27,6 @@ const CarFilters = ({ onFilterChange }) => {
   ];
 
   useEffect(() => {
-    // Debounce to prevent too many API calls while typing
     const handler = setTimeout(() => {
       // Remove empty filters
       const nonEmptyFilters = Object.fromEntries(

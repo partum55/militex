@@ -140,5 +140,30 @@ def import_cars_data():
 
 if __name__ == "__main__":
     print("Starting data import...")
+
+    # 1. Парсимо і додаємо з Auto.ria (через твою існуючу логіку)
+    from cars.parser_integration import import_cars_sync
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    admin_user, created = User.objects.get_or_create(
+        username='admin',
+        defaults={
+            'email': 'admin@example.com',
+            'is_staff': True,
+            'is_superuser': True
+        }
+    )
+    if created:
+        admin_user.set_password('admin123')
+        admin_user.save()
+        print("Created admin user for parser")
+
+    print("Importing from Auto.ria...")
+    count = import_cars_sync(limit=10, admin_user_id=admin_user.id)
+    print(f"Imported {count} cars from Auto.ria")
+
+    # 2. Імпорт з SQLite-файлу
     import_cars_data()
+
     print("Data import completed!")

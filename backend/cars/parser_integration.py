@@ -285,12 +285,12 @@ async def import_cars_from_autoria(limit=20, admin_user_id=1):
             continue
             
         # Check if car with same make, model and year already exists
-        existing_car = await sync_to_async(Car.objects.filter)(
+        existing_car = await sync_to_async(lambda: Car.objects.filter(
             make=car_data["make"],
             model=car_data["model"],
             year=car_data["year"],
             mileage=car_data["mileage"]
-        ).first()
+        ).first())()
         
         if existing_car:
             print(f"[SKIP] Car already exists: {car_data['make']} {car_data['model']} ({car_data['year']})")

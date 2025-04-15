@@ -113,18 +113,6 @@ const BuyPage = () => {
     setActiveFilters({});
   };
 
-  const handleImport = async () => {
-    try {
-      const res = await CarService.importFromAutoria(20);
-      alert(`✅ ${res.imported} cars imported from auto.ria!`);
-      // optional: re-fetch filter data or car list
-      window.location.reload(); // quick hack
-    } catch (err) {
-      console.error("Import failed", err);
-      alert("⚠️ Failed to import cars");
-    }
-  };
-
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="bg-indigo-900 text-white py-12">
@@ -298,12 +286,6 @@ const BuyPage = () => {
               className="py-2 px-4 bg-indigo-900 text-white rounded-md hover:bg-indigo-800"
             >
               {t('common.applyFilters')}
-            </button>
-            <button
-              onClick={handleImport}
-              className="py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-500"
-            >
-              {t('buy.importFromAutoRia') || 'Import from Auto.ria'}
             </button>
           </div>
         </div>
