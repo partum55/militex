@@ -10,6 +10,15 @@ const CarService = {
     }
   },
 
+  importFromAutoria: async (limit = 5) => {
+    try {
+      const response = await api.post('cars/import_from_autoria/', { limit });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   getCarById: async (id) => {
     try {
       const response = await api.get(`cars/${id}/`);

@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Car
 from .serializers import CarSerializer
 from .filters import CarFilter
+from .parser_integration import import_cars_from_autoria
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -13,6 +14,9 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
             return True
         return obj.seller == request.user
 
+class IsAdminUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_staff
 
 class CarViewSet(viewsets.ModelViewSet):
     queryset = Car.objects.all()
@@ -38,3 +42,14 @@ class CarViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], permission_classes=[IsAdminUser])
+    def import_from_autoria(self, request):
+        """Import cars from auto.ria.com (admin only)"""
+        limit = int(request.data.get('limit', 10))
+        
+        try:
+            count = import_cars_from_autoria(limit=limit, admin_user_id=request.user.id)
+            return Response({'status': 'success', 'imported': count}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
