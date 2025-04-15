@@ -9,12 +9,19 @@ const api = axios.create({
   withCredentials: true, // Important for cookies
 });
 
+// Load token from localStorage on startup
+const token = localStorage.getItem('militex_token');
+if (token) {
+  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
+
 // Add logging for debugging API requests
 api.interceptors.request.use(
   (config) => {
     console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, config.params || {});
-    
-    const token = localStorage.getItem('token');
+
+    // Check token before each request
+    const token = localStorage.getItem('militex_token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -36,7 +43,7 @@ api.interceptors.response.use(
   async (error) => {
     // Log the error for debugging
     console.error('API Error:', error.response?.data || error.message);
-    
+
     const originalRequest = error.config;
 
     // If error is 401 and we haven't tried refreshing yet
@@ -45,12 +52,12 @@ api.interceptors.response.use(
 
       try {
         console.log('Attempting token refresh...');
-        const refreshToken = localStorage.getItem('refreshToken');
-        
+        const refreshToken = localStorage.getItem('militex_refresh_token');
+
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
-        
+
         const response = await axios.post('/api/token/refresh/', {
           refresh: refreshToken
         }, {
@@ -59,7 +66,7 @@ api.interceptors.response.use(
 
         if (response.data.access) {
           console.log('Token refresh successful');
-          localStorage.setItem('token', response.data.access);
+          localStorage.setItem('militex_token', response.data.access);
           api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
 
           // Update the authorization header in the original request
@@ -72,16 +79,20 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
-        
+
         // If refresh fails, clear tokens and redirect to login
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        
-        // Add a small delay before redirecting
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 100);
-        
+        localStorage.removeItem('militex_token');
+        localStorage.removeItem('militex_refresh_token');
+        localStorage.removeItem('militex_user');
+
+        // If we're not already on the login page, redirect
+        if (!window.location.pathname.includes('/login')) {
+          // Add a small delay before redirecting
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 100);
+        }
+
         return Promise.reject(refreshError);
       }
     }

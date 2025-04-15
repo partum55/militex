@@ -2,6 +2,23 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthService from '../../services/auth.service';
+import axios from 'axios';
+
+// Helper function to get CSRF token
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 
 const Register = () => {
   const { t } = useTranslation();
@@ -112,14 +129,35 @@ const Register = () => {
       // Extract data for registration (excluding confirmPassword)
       const { confirmPassword, ...userData } = formData;
 
-      // Use AuthService for registration
-      await AuthService.register(userData);
+      // Get CSRF token first
+      await axios.get('/csrf/', { withCredentials: true });
+      const csrftoken = getCookie('csrftoken');
+
+      // Make registration request with CSRF token
+      const response = await axios.post('/api/users/', userData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+        },
+        withCredentials: true
+      });
+
+      console.log("Registration successful:", response.data);
 
       // If registration successful, log the user in
-      await AuthService.login(formData.username, formData.password);
+      try {
+        await AuthService.login(formData.username, formData.password);
 
-      // Navigate to home page
-      navigate('/');
+        // Navigate to home page
+        navigate('/');
+      } catch (loginError) {
+        console.error("Login after registration failed:", loginError);
+        // Even if login fails, we'll consider registration successful and redirect to login
+        setGeneralError(t('auth.registrationSuccessLoginFailed'));
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      }
     } catch (err) {
       console.error('Registration error:', err);
 
@@ -146,9 +184,6 @@ const Register = () => {
         } else {
           setGeneralError(t('auth.registrationFailed'));
         }
-      } else if (err.formattedErrors) {
-        // Use formatted errors from auth service if available
-        setErrors(err.formattedErrors);
       } else {
         setGeneralError(t('auth.registrationFailed'));
       }

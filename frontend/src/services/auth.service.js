@@ -19,13 +19,18 @@ function getCookie(name) {
   return cookieValue;
 }
 
-const TOKEN_KEY = 'token';
-const REFRESH_TOKEN_KEY = 'refreshToken';
-const USER_KEY = 'user';
+const TOKEN_KEY = 'militex_token';
+const REFRESH_TOKEN_KEY = 'militex_refresh_token';
+const USER_KEY = 'militex_user';
 
 const AuthService = {
   login: async (username, password) => {
     try {
+      // Clear any existing tokens first to avoid conflicts
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+
       // Get CSRF token first
       await axios.get('/csrf/', { withCredentials: true });
 
@@ -44,7 +49,10 @@ const AuthService = {
         withCredentials: true
       });
 
+      console.log("Login response:", response.data);
+
       if (response.data.access) {
+        // Store tokens in localStorage
         localStorage.setItem(TOKEN_KEY, response.data.access);
         localStorage.setItem(REFRESH_TOKEN_KEY, response.data.refresh);
 
@@ -53,20 +61,37 @@ const AuthService = {
         api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
 
         // Fetch user data immediately after login
-        const userData = await api.get('/users/me/');
-        localStorage.setItem(USER_KEY, JSON.stringify(userData.data));
+        try {
+          const userData = await api.get('/users/me/');
 
-        return userData.data;
+          if (userData.data) {
+            console.log("User data fetched:", userData.data);
+            localStorage.setItem(USER_KEY, JSON.stringify(userData.data));
+            return userData.data;
+          } else {
+            console.error("User data response empty");
+            throw new Error("Failed to get user data");
+          }
+        } catch (userError) {
+          console.error("Error fetching user data:", userError);
+          throw userError;
+        }
+      } else {
+        console.error("No access token in response");
+        throw new Error("Authentication failed - no token received");
       }
-
-      return null;
     } catch (error) {
       console.error('Login error:', error);
+      // Clear any partial auth data
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
       throw error;
     }
   },
 
   logout: () => {
+    // Clear auth data
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
@@ -74,69 +99,36 @@ const AuthService = {
     // Remove the Authorization header
     delete axios.defaults.headers.common['Authorization'];
     delete api.defaults.headers.common['Authorization'];
-  },
 
-  register: async (userData) => {
-    try {
-      // Get CSRF token
-      await axios.get('/csrf/', { withCredentials: true });
-      const csrftoken = getCookie('csrftoken');
-
-      // Make registration request
-      const response = await axios.post('/api/users/', userData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken
-        },
-        withCredentials: true
-      });
-
-      return response.data;
-    } catch (error) {
-      // Format Django validation errors for better display
-      if (error.response && error.response.data) {
-        // Create a formatted error message
-        const errorData = error.response.data;
-        let formattedError = {};
-
-        // Process each error field
-        Object.keys(errorData).forEach(field => {
-          if (Array.isArray(errorData[field])) {
-            formattedError[field] = errorData[field].join(', ');
-          } else if (typeof errorData[field] === 'string') {
-            formattedError[field] = errorData[field];
-          }
-        });
-
-        error.formattedErrors = formattedError;
-      }
-
-      throw error;
-    }
+    console.log("User logged out, auth data cleared");
   },
 
   getCurrentUser: async () => {
     try {
-      // Check if we have a token first
-      const token = localStorage.getItem(TOKEN_KEY);
+      // First check if we have user data in localStorage
+      const userStr = localStorage.getItem(USER_KEY);
+      if (userStr) {
+        return JSON.parse(userStr);
+      }
+
+      // If no user data, check if we have a token
+      const token = AuthService.getToken();
       if (!token) {
         throw new Error('No authentication token found');
       }
 
-      // Set authorization header for both axios and api
+      // Set authorization header
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      // First try to get user from local storage to reduce API calls
-      const cachedUser = localStorage.getItem(USER_KEY);
-      if (cachedUser) {
-        return JSON.parse(cachedUser);
-      }
-
-      // If no cached user, fetch from API
+      // Fetch user data from API
       const response = await api.get('/users/me/');
-      localStorage.setItem(USER_KEY, JSON.stringify(response.data));
-      return response.data;
+      if (response.data) {
+        localStorage.setItem(USER_KEY, JSON.stringify(response.data));
+        return response.data;
+      } else {
+        throw new Error("Failed to get user data");
+      }
     } catch (error) {
       // If 401 error, try to refresh token
       if (error.response && error.response.status === 401) {
@@ -146,29 +138,13 @@ const AuthService = {
           localStorage.setItem(USER_KEY, JSON.stringify(response.data));
           return response.data;
         } catch (refreshError) {
-          // If refresh fails, logout and throw error
+          // If refresh fails, logout
           AuthService.logout();
           throw refreshError;
         }
       }
-      throw error;
-    }
-  },
-
-  updateProfile: async (userData) => {
-    try {
-      // Get CSRF token
-      await axios.get('/csrf/', { withCredentials: true });
-      const csrftoken = getCookie('csrftoken');
-
-      const response = await api.patch('/users/me/', userData, {
-        headers: {
-          'X-CSRFToken': csrftoken
-        }
-      });
-      localStorage.setItem(USER_KEY, JSON.stringify(response.data));
-      return response.data;
-    } catch (error) {
+      // For other errors, also ensure user is logged out to prevent state inconsistencies
+      AuthService.logout();
       throw error;
     }
   },
@@ -179,20 +155,6 @@ const AuthService = {
 
   getRefreshToken: () => {
     return localStorage.getItem(REFRESH_TOKEN_KEY);
-  },
-
-  isTokenValid: (token) => {
-    if (!token) return false;
-
-    try {
-      const decoded = jwt_decode(token);
-      const currentTime = Date.now() / 1000;
-
-      // Check if token is expired
-      return decoded.exp > currentTime;
-    } catch (error) {
-      return false;
-    }
   },
 
   refreshToken: async () => {
@@ -217,10 +179,11 @@ const AuthService = {
         withCredentials: true
       });
 
-      if (response.data.access) {
+      if (response.data && response.data.access) {
+        // Update token in localStorage
         localStorage.setItem(TOKEN_KEY, response.data.access);
 
-        // Update authorization header
+        // Update authorization headers
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
         api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
 
@@ -229,25 +192,25 @@ const AuthService = {
         throw new Error('Access token not received');
       }
     } catch (error) {
+      console.error("Token refresh error:", error);
       // Clear tokens on refresh failure
       AuthService.logout();
       throw error;
     }
   },
 
-  ensureValidToken: async () => {
-    const token = AuthService.getToken();
+  isTokenValid: (token) => {
+    if (!token) return false;
 
-    if (!token) {
-      throw new Error('Not authenticated');
+    try {
+      const decoded = jwt_decode(token);
+      const currentTime = Date.now() / 1000;
+
+      // Check if token is expired
+      return decoded.exp > currentTime;
+    } catch (error) {
+      return false;
     }
-
-    if (!AuthService.isTokenValid(token)) {
-      // Token expired, try to refresh
-      return await AuthService.refreshToken();
-    }
-
-    return token;
   },
 
   isAuthenticated: () => {

@@ -33,7 +33,8 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
     engine_power: initialData?.engine_power || '',
     description: initialData?.description || '',
     uploaded_images: [],
-    existing_images: initialData?.images || []
+    existing_images: initialData?.images || [],
+    images_to_delete: [] // Track IDs of images to delete during update
   });
 
   // UI state
@@ -94,11 +95,18 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
   const removeExistingImage = (index) => {
     setFormData(prevData => {
       const newImages = [...prevData.existing_images];
-      newImages.splice(index, 1);
+      const removedImage = newImages.splice(index, 1)[0];
+
+      // If the image has an ID, add it to the list of images to delete
+      const imagesToDelete = [...prevData.images_to_delete];
+      if (removedImage && removedImage.id) {
+        imagesToDelete.push(removedImage.id);
+      }
 
       return {
         ...prevData,
-        existing_images: newImages
+        existing_images: newImages,
+        images_to_delete: imagesToDelete
       };
     });
   };
@@ -153,6 +161,18 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
       return false;
     }
 
+    // Validate that there's at least one image when creating a new car
+    if (!isEditing && formData.uploaded_images.length === 0) {
+      setError('Please upload at least one image of your vehicle');
+      return false;
+    }
+
+    // When editing, ensure there's at least one image remaining
+    if (isEditing && formData.existing_images.length === 0 && formData.uploaded_images.length === 0) {
+      setError('Please keep at least one image or upload a new one');
+      return false;
+    }
+
     return true;
   };
 
@@ -168,22 +188,38 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
     setError('');
 
     try {
-      // Prepare data for submission - clean up any empty strings for numeric fields
-      const submissionData = { ...formData };
+      // Prepare data for submission
+      const formDataToSubmit = new FormData();
 
-      // Convert numeric fields
-      ['price', 'year', 'mileage', 'engine_size', 'engine_power'].forEach(field => {
-        if (submissionData[field]) {
-          submissionData[field] = parseFloat(submissionData[field]);
+      // Add simple fields
+      Object.entries(formData).forEach(([key, value]) => {
+        // Skip special fields that need special handling
+        if (
+          key !== 'uploaded_images' &&
+          key !== 'existing_images' &&
+          key !== 'images_to_delete' &&
+          value !== ''
+        ) {
+          formDataToSubmit.append(key, value);
         }
       });
 
+      // Add uploaded images
+      formData.uploaded_images.forEach((image) => {
+        formDataToSubmit.append('uploaded_images', image);
+      });
+
+      // Add image IDs to delete when editing
+      if (isEditing && formData.images_to_delete.length > 0) {
+        formDataToSubmit.append('images_to_delete', JSON.stringify(formData.images_to_delete));
+      }
+
       if (isEditing && carId) {
         // For editing, we'll need to handle existing images differently
-        await CarService.updateCar(carId, submissionData);
+        await CarService.updateCar(carId, formDataToSubmit);
       } else {
         // For creating new
-        await CarService.createCar(submissionData);
+        await CarService.createCar(formDataToSubmit);
       }
 
       setSuccess(true);

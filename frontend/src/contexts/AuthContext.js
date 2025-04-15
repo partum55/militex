@@ -13,16 +13,25 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Function to manually update authentication state
+  const login = useCallback(async (userData) => {
+    setCurrentUser(userData);
+    setIsAuthenticated(true);
+    setError(null);
+  }, []);
+
   // Load user data on mount
   useEffect(() => {
     const initAuth = async () => {
       try {
         setLoading(true);
+        setError(null);
 
-        // Check for valid token
+        // Check if we have a valid token
         if (AuthService.isAuthenticated()) {
-          // Get user data
+          console.log("Valid token found, getting user data");
           try {
+            // Get user data using the token
             const userData = await AuthService.getCurrentUser();
             setCurrentUser(userData);
             setIsAuthenticated(true);
@@ -31,10 +40,14 @@ export const AuthProvider = ({ children }) => {
 
             // Try to refresh token
             try {
-              await AuthService.refreshToken();
-              const userData = await AuthService.getCurrentUser();
-              setCurrentUser(userData);
-              setIsAuthenticated(true);
+              const newToken = await AuthService.refreshToken();
+              if (newToken) {
+                const userData = await AuthService.getCurrentUser();
+                setCurrentUser(userData);
+                setIsAuthenticated(true);
+              } else {
+                throw new Error("Token refresh failed");
+              }
             } catch (refreshError) {
               console.error('Token refresh failed:', refreshError);
               AuthService.logout();
@@ -43,14 +56,18 @@ export const AuthProvider = ({ children }) => {
             }
           }
         } else {
+          console.log("No valid token found");
           // Try to refresh token
           try {
-            await AuthService.refreshToken();
-            const userData = await AuthService.getCurrentUser();
-            setCurrentUser(userData);
-            setIsAuthenticated(true);
+            const newToken = await AuthService.refreshToken();
+            if (newToken) {
+              const userData = await AuthService.getCurrentUser();
+              setCurrentUser(userData);
+              setIsAuthenticated(true);
+            }
           } catch (refreshError) {
             // Refresh failed, ensure logout
+            console.log("Token refresh failed, logging out");
             AuthService.logout();
             setCurrentUser(null);
             setIsAuthenticated(false);
@@ -69,26 +86,6 @@ export const AuthProvider = ({ children }) => {
 
     initAuth();
   }, []);
-
-  // Login function
-  const login = async (username, password) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const userData = await AuthService.login(username, password);
-      setCurrentUser(userData);
-      setIsAuthenticated(true);
-
-      return userData;
-    } catch (err) {
-      console.error('Login error:', err);
-      setError(err.response?.data?.detail || 'Failed to login. Please check your credentials.');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Register function
   const register = async (userData) => {
@@ -112,6 +109,8 @@ export const AuthProvider = ({ children }) => {
     AuthService.logout();
     setCurrentUser(null);
     setIsAuthenticated(false);
+    // Force a page reload to clear any remaining state
+    window.location.href = '/';
   }, []);
 
   // Update user profile

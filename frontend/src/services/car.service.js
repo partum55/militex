@@ -2,7 +2,7 @@
 import api from './api';
 
 const CarService = {
-  // Get all cars with optional filters (фільтрація)
+  // Get all cars with optional filters
   getAllCars: async (params = {}) => {
     try {
       const response = await api.get('cars/', { params });
@@ -13,7 +13,7 @@ const CarService = {
     }
   },
 
-  // Import cars from Auto.ria (тільки для адмінів)
+  // Import cars from Auto.ria (admin only)
   importFromAutoria: async (limit = 10) => {
     try {
       const response = await api.post('cars/import_from_autoria/', { limit });
@@ -38,20 +38,7 @@ const CarService = {
   // Create a new car listing
   createCar: async (carData) => {
     try {
-      const formData = new FormData();
-      Object.keys(carData).forEach((key) => {
-        if (key !== 'uploaded_images') {
-          formData.append(key, carData[key]);
-        }
-      });
-
-      if (carData.uploaded_images?.length) {
-        carData.uploaded_images.forEach((image) => {
-          formData.append('uploaded_images', image);
-        });
-      }
-
-      const response = await api.post('cars/', formData, {
+      const response = await api.post('cars/', carData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;
@@ -64,20 +51,30 @@ const CarService = {
   // Update an existing car listing
   updateCar: async (id, carData) => {
     try {
-      const formData = new FormData();
-      Object.keys(carData).forEach((key) => {
-        if (key !== 'uploaded_images') {
-          formData.append(key, carData[key]);
-        }
-      });
+      // If carData is a FormData object, use it directly
+      // Otherwise, create one (for backward compatibility)
+      let formDataObj = carData;
 
-      if (carData.uploaded_images?.length) {
-        carData.uploaded_images.forEach((image) => {
-          formData.append('uploaded_images', image);
+      if (!(carData instanceof FormData)) {
+        formDataObj = new FormData();
+        Object.keys(carData).forEach((key) => {
+          if (key !== 'uploaded_images' && key !== 'existing_images' && key !== 'images_to_delete') {
+            formDataObj.append(key, carData[key]);
+          }
         });
+
+        if (carData.uploaded_images?.length) {
+          carData.uploaded_images.forEach((image) => {
+            formDataObj.append('uploaded_images', image);
+          });
+        }
+
+        if (carData.images_to_delete?.length) {
+          formDataObj.append('images_to_delete', JSON.stringify(carData.images_to_delete));
+        }
       }
 
-      const response = await api.patch(`cars/${id}/`, formData, {
+      const response = await api.patch(`cars/${id}/`, formDataObj, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;
@@ -148,6 +145,17 @@ const CarService = {
       throw error;
     }
   },
+
+  // Delete a specific car image
+  deleteCarImage: async (imageId) => {
+    try {
+      await api.delete(`car-images/${imageId}/`);
+      return true;
+    } catch (error) {
+      console.error(`Error deleting car image with ID ${imageId}:`, error);
+      throw error;
+    }
+  }
 };
 
 export default CarService;

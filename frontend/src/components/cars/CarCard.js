@@ -1,19 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getImageUrl } from '../../utils/helpers';
 
 const CarCard = ({ car }) => {
   const { t } = useTranslation();
+  const [imageSrc, setImageSrc] = useState(null);
 
-  // Function to get the primary image or use a placeholder
-  const getPrimaryImage = () => {
-    if (car.images && car.images.length > 0) {
-      const primaryImage = car.images.find(img => img.is_primary);
-      return getImageUrl(primaryImage ? primaryImage.image : car.images[0].image);
-    }
-    return '/images/car-placeholder.jpg'; // Fallback image
-  };
+  // Load image only once when component mounts
+  useEffect(() => {
+    // Function to get the primary image or use a placeholder
+    const loadPrimaryImage = () => {
+      if (car.images && car.images.length > 0) {
+        const primaryImage = car.images.find(img => img.is_primary);
+        return getImageUrl(primaryImage ? primaryImage.image : car.images[0].image);
+      }
+      return '/images/car-placeholder.jpg'; // Fallback image
+    };
+
+    setImageSrc(loadPrimaryImage());
+  }, [car.id]); // Only re-run if car.id changes
 
   // Handle missing car data gracefully
   if (!car || !car.id) {
@@ -38,15 +44,17 @@ const CarCard = ({ car }) => {
       <Link to={`/cars/${car.id}`} className="flex flex-col md:flex-row">
         {/* Car Image */}
         <div className="md:w-1/3">
-          <img
-            src={getPrimaryImage()}
-            alt={`${car.year} ${car.make} ${car.model}`}
-            className="w-full h-48 md:h-full object-cover"
-            onError={(e) => {
-              e.target.onerror = null; // Prevent infinite loop
-              e.target.src = '/images/car-placeholder.jpg';
-            }}
-          />
+          {imageSrc && (
+            <img
+              src={imageSrc}
+              alt={`${car.year} ${car.make} ${car.model}`}
+              className="w-full h-48 md:h-full object-cover"
+              onError={(e) => {
+                e.target.onerror = null; // Prevent infinite loop
+                e.target.src = '/images/car-placeholder.jpg';
+              }}
+            />
+          )}
         </div>
 
         {/* Car Details */}
