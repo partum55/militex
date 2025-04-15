@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { getImageUrl } from '../../utils/helpers';
 
 const CarCard = ({ car }) => {
   const { t } = useTranslation();
@@ -9,19 +10,28 @@ const CarCard = ({ car }) => {
   const getPrimaryImage = () => {
     if (car.images && car.images.length > 0) {
       const primaryImage = car.images.find(img => img.is_primary);
-      return primaryImage ? primaryImage.image : car.images[0].image;
+      return getImageUrl(primaryImage ? primaryImage.image : car.images[0].image);
     }
     return '/images/car-placeholder.jpg'; // Fallback image
   };
 
-  // Ensure car data is valid
-  if (!car || !car.make || !car.model || !car.year) {
-    return null; // Return null or a placeholder if the car data is invalid
+  // Handle missing car data gracefully
+  if (!car || !car.id) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-4 h-48 flex items-center justify-center">
+        <p className="text-gray-500">{t('errors.missingCarData')}</p>
+      </div>
+    );
   }
 
   // Handle price and mileage formatting
-  const priceFormatted = car.price ? car.price.toLocaleString() : 'N/A';
-  const mileageFormatted = car.mileage ? car.mileage.toLocaleString() : 'N/A';
+  const priceFormatted = typeof car.price === 'number'
+    ? car.price.toLocaleString()
+    : Number(car.price).toLocaleString() || 'N/A';
+
+  const mileageFormatted = typeof car.mileage === 'number'
+    ? car.mileage.toLocaleString()
+    : Number(car.mileage).toLocaleString() || 'N/A';
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg">
@@ -32,6 +42,10 @@ const CarCard = ({ car }) => {
             src={getPrimaryImage()}
             alt={`${car.year} ${car.make} ${car.model}`}
             className="w-full h-48 md:h-full object-cover"
+            onError={(e) => {
+              e.target.onerror = null; // Prevent infinite loop
+              e.target.src = '/images/car-placeholder.jpg';
+            }}
           />
         </div>
 
@@ -79,7 +93,7 @@ const CarCard = ({ car }) => {
           {/* Location and Seller */}
           <div className="mt-3 flex justify-between text-sm">
             <div className="text-gray-500">
-              {car.city}, {car.country}
+              {car.city || 'N/A'}, {car.country || 'N/A'}
             </div>
             <div className="text-indigo-600">
               {t('common.viewDetails')}

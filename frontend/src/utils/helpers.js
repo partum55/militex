@@ -20,13 +20,23 @@ export const getImageUrl = (imagePath, fallbackImage = '/images/placeholder.jpg'
     return imagePath;
   }
   
+  // If the image path starts with /media, it's a Django media file
+  if (imagePath.startsWith('/media/')) {
+    return imagePath;
+  }
+
   // If the image path starts with a slash, it's a relative path from the root
   if (imagePath.startsWith('/')) {
-    return `${window.location.origin}${imagePath}`;
+    return imagePath;
   }
-  
+
+  // For Django media URLs that don't start with /media
+  if (imagePath.includes('car_images/') || imagePath.includes('fundraiser_images/')) {
+    return `/media/${imagePath}`;
+  }
+
   // Otherwise, prepend the API URL
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const API_URL = '/api/';
   return `${API_URL}${imagePath}`;
 };
 
@@ -59,6 +69,10 @@ export const revokeFilePreview = (url) => {
  * @returns {string} Formatted currency value
  */
 export const formatCurrency = (value, currency = 'USD') => {
+  if (typeof value !== 'number') {
+    value = parseFloat(value) || 0;
+  }
+
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency,
@@ -74,12 +88,22 @@ export const formatCurrency = (value, currency = 'USD') => {
  */
 export const formatDate = (dateString) => {
   if (!dateString) return '';
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
+
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return dateString; // Return original if not valid date
+    }
+
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(date);
+  } catch (e) {
+    console.error('Date formatting error:', e);
+    return dateString;
+  }
 };
 
 /**

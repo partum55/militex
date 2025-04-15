@@ -50,9 +50,10 @@ const AuthService = {
 
         // Set the token in the axios default headers
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
 
         // Fetch user data immediately after login
-        const userData = await api.get('users/me/');
+        const userData = await api.get('/users/me/');
         localStorage.setItem(USER_KEY, JSON.stringify(userData.data));
 
         return userData.data;
@@ -72,19 +73,46 @@ const AuthService = {
 
     // Remove the Authorization header
     delete axios.defaults.headers.common['Authorization'];
+    delete api.defaults.headers.common['Authorization'];
   },
 
   register: async (userData) => {
-    // Get CSRF token
-    const csrftoken = getCookie('csrftoken');
+    try {
+      // Get CSRF token
+      await axios.get('/csrf/', { withCredentials: true });
+      const csrftoken = getCookie('csrftoken');
 
-    return axios.post('/api/users/', userData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken
-      },
-      withCredentials: true
-    });
+      // Make registration request
+      const response = await axios.post('/api/users/', userData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+        },
+        withCredentials: true
+      });
+
+      return response.data;
+    } catch (error) {
+      // Format Django validation errors for better display
+      if (error.response && error.response.data) {
+        // Create a formatted error message
+        const errorData = error.response.data;
+        let formattedError = {};
+
+        // Process each error field
+        Object.keys(errorData).forEach(field => {
+          if (Array.isArray(errorData[field])) {
+            formattedError[field] = errorData[field].join(', ');
+          } else if (typeof errorData[field] === 'string') {
+            formattedError[field] = errorData[field];
+          }
+        });
+
+        error.formattedErrors = formattedError;
+      }
+
+      throw error;
+    }
   },
 
   getCurrentUser: async () => {
@@ -95,20 +123,49 @@ const AuthService = {
         throw new Error('No authentication token found');
       }
 
-      // Set authorization header
+      // Set authorization header for both axios and api
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      const response = await api.get('users/me/');
+      // First try to get user from local storage to reduce API calls
+      const cachedUser = localStorage.getItem(USER_KEY);
+      if (cachedUser) {
+        return JSON.parse(cachedUser);
+      }
+
+      // If no cached user, fetch from API
+      const response = await api.get('/users/me/');
       localStorage.setItem(USER_KEY, JSON.stringify(response.data));
       return response.data;
     } catch (error) {
+      // If 401 error, try to refresh token
+      if (error.response && error.response.status === 401) {
+        try {
+          await AuthService.refreshToken();
+          const response = await api.get('/users/me/');
+          localStorage.setItem(USER_KEY, JSON.stringify(response.data));
+          return response.data;
+        } catch (refreshError) {
+          // If refresh fails, logout and throw error
+          AuthService.logout();
+          throw refreshError;
+        }
+      }
       throw error;
     }
   },
 
   updateProfile: async (userData) => {
     try {
-      const response = await api.patch('users/me/', userData);
+      // Get CSRF token
+      await axios.get('/csrf/', { withCredentials: true });
+      const csrftoken = getCookie('csrftoken');
+
+      const response = await api.patch('/users/me/', userData, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
       localStorage.setItem(USER_KEY, JSON.stringify(response.data));
       return response.data;
     } catch (error) {
@@ -147,6 +204,7 @@ const AuthService = {
       }
 
       // Get CSRF token
+      await axios.get('/csrf/', { withCredentials: true });
       const csrftoken = getCookie('csrftoken');
 
       const response = await axios.post('/api/token/refresh/', {
@@ -164,6 +222,7 @@ const AuthService = {
 
         // Update authorization header
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
 
         return response.data.access;
       } else {

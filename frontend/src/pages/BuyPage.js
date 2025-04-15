@@ -1,3 +1,4 @@
+// BuyPage.js
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import CarList from '../components/cars/CarList';
@@ -21,7 +22,6 @@ const BuyPage = () => {
     transmission: '',
     condition: '',
   });
-  const [activeFilters, setActiveFilters] = useState({});
   const [loading, setLoading] = useState(false);
 
   // Load unique values for filter options
@@ -29,30 +29,31 @@ const BuyPage = () => {
     const fetchFilterOptions = async () => {
       try {
         setLoading(true);
-        const cars = await CarService.getAllCars();
-        
+        const response = await CarService.getAllCars();
+        const cars = response.results || [];
+
         // Extract unique makes
         const makes = [...new Set(cars.map(car => car.make))].sort();
         setMakeOptions(makes);
-        
+
         // Extract unique body types
         const bodies = [...new Set(cars.map(car => car.body_type).filter(Boolean))].sort();
         setBodyTypes(bodies);
-        
+
         // Extract unique fuel types
         const fuels = [...new Set(cars.map(car => car.fuel_type))].sort();
         setFuelTypes(fuels);
-        
+
       } catch (error) {
         console.error('Failed to load filter options:', error);
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchFilterOptions();
   }, []);
-  
+
   // Load models when make changes
   useEffect(() => {
     const fetchModelsForMake = async () => {
@@ -60,26 +61,27 @@ const BuyPage = () => {
         setModelOptions([]);
         return;
       }
-      
+
       try {
-        const cars = await CarService.getCars({ make: filters.make });
+        const response = await CarService.getCars({ make: filters.make });
+        const cars = response.results || [];
         const models = [...new Set(cars.map(car => car.model))].sort();
         setModelOptions(models);
       } catch (error) {
         console.error('Failed to load models:', error);
       }
     };
-    
+
     fetchModelsForMake();
   }, [filters.make]);
-  
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters({
-      ...filters,
+    setFilters(prev => ({
+      ...prev,
       [name]: value
-    });
-    
+    }));
+
     // Reset model if make changes
     if (name === 'make') {
       setFilters(prev => ({
@@ -88,15 +90,7 @@ const BuyPage = () => {
       }));
     }
   };
-  
-  const applyFilters = () => {
-    // Remove empty filters
-    const activeFilters = Object.fromEntries(
-      Object.entries(filters).filter(([_, value]) => value !== '')
-    );
-    setActiveFilters(activeFilters);
-  };
-  
+
   const resetFilters = () => {
     setFilters({
       make: '',
@@ -110,7 +104,6 @@ const BuyPage = () => {
       transmission: '',
       condition: '',
     });
-    setActiveFilters({});
   };
 
   return (
@@ -123,12 +116,12 @@ const BuyPage = () => {
           </p>
         </div>
       </div>
-      
+
       {/* Filter Panel */}
       <div className="container mx-auto px-6 py-6">
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-bold text-indigo-900 mb-4">{t('buy.filterVehicles')}</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {/* Make */}
             <div>
@@ -145,7 +138,7 @@ const BuyPage = () => {
                 ))}
               </select>
             </div>
-            
+
             {/* Model */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('cars.model')}</label>
@@ -162,7 +155,7 @@ const BuyPage = () => {
                 ))}
               </select>
             </div>
-            
+
             {/* Year Range */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('cars.yearRange')}</label>
@@ -185,7 +178,7 @@ const BuyPage = () => {
                 />
               </div>
             </div>
-            
+
             {/* Price Range */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('cars.priceRange')}</label>
@@ -208,7 +201,7 @@ const BuyPage = () => {
                 />
               </div>
             </div>
-            
+
             {/* Body Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('cars.bodyType')}</label>
@@ -224,7 +217,7 @@ const BuyPage = () => {
                 ))}
               </select>
             </div>
-            
+
             {/* Fuel Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('cars.fuelType')}</label>
@@ -240,7 +233,7 @@ const BuyPage = () => {
                 ))}
               </select>
             </div>
-            
+
             {/* Transmission */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('cars.transmission')}</label>
@@ -256,7 +249,7 @@ const BuyPage = () => {
                 <option value="semi-automatic">{t('cars.semiAutomatic')}</option>
               </select>
             </div>
-            
+
             {/* Condition */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('cars.condition')}</label>
@@ -273,7 +266,7 @@ const BuyPage = () => {
               </select>
             </div>
           </div>
-          
+
           <div className="mt-6 flex justify-end space-x-4">
             <button
               onClick={resetFilters}
@@ -281,17 +274,11 @@ const BuyPage = () => {
             >
               {t('common.reset')}
             </button>
-            <button
-              onClick={applyFilters}
-              className="py-2 px-4 bg-indigo-900 text-white rounded-md hover:bg-indigo-800"
-            >
-              {t('common.applyFilters')}
-            </button>
           </div>
         </div>
       </div>
-      
-      <CarList filters={activeFilters} />
+
+      <CarList filters={filters} />
     </div>
   );
 };
