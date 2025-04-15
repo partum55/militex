@@ -2,23 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthService from '../../services/auth.service';
-import axios from 'axios';
-
-// Helper to get CSRF token from cookies
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-      if (cookie.startsWith(name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
 
 const Register = () => {
   const { t } = useTranslation();
@@ -47,7 +30,7 @@ const Register = () => {
     }));
   };
 
-  const nextStep = async (e) => {
+  const nextStep = (e) => {
     e.preventDefault();
     if (!validateStep1()) return;
     setStep(2);
@@ -100,41 +83,39 @@ const Register = () => {
     setError('');
 
     try {
+      // Extract data for registration (excluding confirmPassword)
       const { confirmPassword, ...userData } = formData;
-
-      // Get CSRF token
-      const csrftoken = getCookie('csrftoken');
-
-      // Use axios directly for the registration request
-      const response = await axios.post('/api/users/', userData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken
-        },
-        withCredentials: true
-      });
-
-      if (response.status >= 200 && response.status < 300) {
-        // Optional: call AuthService.login afterwards
-        await AuthService.login(formData.username, formData.password);
-        await AuthService.getCurrentUser();
-        navigate('/');
-      } else {
-        setError(t('auth.registrationFailed'));
-      }
+      
+      // Use AuthService for registration
+      await AuthService.register(userData);
+      
+      // If registration successful, log the user in
+      await AuthService.login(formData.username, formData.password);
+      
+      // Navigate to home page
+      navigate('/');
     } catch (err) {
       console.error('Registration error:', err);
+      
+      // Format error message from API response if available
       if (err.response?.data) {
-        // Format Django validation errors
-        const errors = [];
-        Object.entries(err.response.data).forEach(([field, errorMessages]) => {
-          if (Array.isArray(errorMessages)) {
-            errors.push(`${field}: ${errorMessages.join(', ')}`);
-          } else if (typeof errorMessages === 'string') {
-            errors.push(`${field}: ${errorMessages}`);
+        const errorMessages = [];
+        
+        // Handle Django validation errors (can be nested objects)
+        Object.entries(err.response.data).forEach(([field, message]) => {
+          if (Array.isArray(message)) {
+            errorMessages.push(`${field}: ${message.join(', ')}`);
+          } else if (typeof message === 'string') {
+            errorMessages.push(`${field}: ${message}`);
+          } else if (typeof message === 'object') {
+            // Handle nested error objects
+            Object.entries(message).forEach(([nestedField, nestedMessage]) => {
+              errorMessages.push(`${field}.${nestedField}: ${nestedMessage}`);
+            });
           }
         });
-        setError(errors.join('\n') || t('auth.registrationFailed'));
+        
+        setError(errorMessages.join('\n') || t('auth.registrationFailed'));
       } else {
         setError(t('auth.registrationFailed'));
       }
@@ -145,34 +126,167 @@ const Register = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <div className="w-full md:w-1/2 bg-cover bg-center" style={{ backgroundImage: "url('/images/military-vehicle.jpg')" }}></div>
+      <div 
+        className="w-full md:w-1/2 bg-cover bg-center" 
+        style={{ backgroundImage: "url('/images/military-vehicle.jpg')" }}
+      ></div>
+      
       <div className="w-full md:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <h2 className="text-3xl font-bold text-indigo-900 mb-8">{t('common.signUp')}</h2>
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error.split('\n').map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
+            </div>
           )}
 
           {step === 1 ? (
-            <form onSubmit={nextStep}>
-              <input name="first_name" value={formData.first_name} onChange={handleInputChange} className="input" placeholder={t('auth.name')} required />
-              <input name="last_name" value={formData.last_name} onChange={handleInputChange} className="input" placeholder={t('auth.surname')} required />
-              <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="input" placeholder={t('auth.email')} required />
-              <input type="tel" name="phone_number" value={formData.phone_number} onChange={handleInputChange} className="input" placeholder={t('auth.phoneNumber')} />
-              <button type="submit" className="btn-primary">{t('common.next')} →</button>
+            <form onSubmit={nextStep} className="space-y-4">
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="first_name">
+                  {t('auth.name')} *
+                </label>
+                <input
+                  type="text"
+                  id="first_name"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="last_name">
+                  {t('auth.surname')} *
+                </label>
+                <input
+                  type="text"
+                  id="last_name"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="email">
+                  {t('auth.email')} *
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="phone_number">
+                  {t('auth.phoneNumber')}
+                </label>
+                <input
+                  type="tel"
+                  id="phone_number"
+                  name="phone_number"
+                  value={formData.phone_number}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              
+              <button
+                type="submit"
+                className="w-full bg-indigo-900 text-white py-2 rounded-lg hover:bg-indigo-800 transition duration-200"
+              >
+                {t('common.next')} →
+              </button>
             </form>
           ) : (
-            <form onSubmit={handleRegister}>
-              <input name="username" value={formData.username} onChange={handleInputChange} className="input" placeholder={t('auth.username')} required />
-              <input type="password" name="password" value={formData.password} onChange={handleInputChange} className="input" placeholder={t('auth.password')} required />
-              <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} className="input" placeholder={t('auth.confirmPassword')} required />
-              <label>
-                <input type="checkbox" name="is_military" checked={formData.is_military} onChange={handleInputChange} /> {t('auth.iAmMilitary')}
-              </label>
-              <div className="flex gap-2">
-                <button type="button" onClick={prevStep} className="btn-secondary">← {t('common.back')}</button>
-                <button type="submit" className="btn-primary" disabled={loading}>{loading ? t('auth.registering') : t('common.signUp')}</button>
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="username">
+                  {t('auth.username')} *
+                </label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="password">
+                  {t('auth.password')} *
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="confirmPassword">
+                  {t('auth.confirmPassword')} *
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+              
+              <div className="mb-4 flex items-center">
+                <input
+                  type="checkbox"
+                  id="is_military"
+                  name="is_military"
+                  checked={formData.is_military}
+                  onChange={handleInputChange}
+                  className="mr-2"
+                />
+                <label className="text-gray-700" htmlFor="is_military">
+                  {t('auth.iAmMilitary')}
+                </label>
+              </div>
+              
+              <div className="flex justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="w-1/2 bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400 transition duration-200"
+                >
+                  ← {t('common.back')}
+                </button>
+                <button
+                  type="submit"
+                  className="w-1/2 bg-indigo-900 text-white py-2 rounded-lg hover:bg-indigo-800 transition duration-200"
+                  disabled={loading}
+                >
+                  {loading ? t('auth.registering') : t('common.signUp')}
+                </button>
               </div>
             </form>
           )}

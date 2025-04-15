@@ -1,8 +1,7 @@
-// frontend/src/pages/HomePage.js
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import FeaturedCars from '../components/cars/FeaturedCars';
 
 const HomePage = () => {
   const { t } = useTranslation();
@@ -115,95 +114,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Featured Cars Section */}
-      <section className="py-16 container mx-auto px-6">
-        <h2 className="text-3xl font-bold text-center text-indigo-900 mb-12">
-          {t('home.featuredVehicles')}
-        </h2>
-        
-        {/* This would be dynamically loaded from your API */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Placeholder card for design */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="h-48 bg-gray-300">
-              <img 
-                src="/images/jeep-placeholder.jpg" 
-                alt="Jeep" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <h3 className="text-lg font-bold text-indigo-900">Jeep Wrangler 2019</h3>
-              <p className="text-gray-600">35,000 {t('cars.mileage')}</p>
-              <div className="mt-2 flex justify-between items-center">
-                <span className="text-xl font-bold text-indigo-900">$28,500</span>
-                <Link 
-                  to="/buy" 
-                  className="text-indigo-600 hover:underline"
-                >
-                  {t('common.viewDetails')}
-                </Link>
-              </div>
-            </div>
-          </div>
-          
-          {/* Repeat card pattern for the other 2 slots */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="h-48 bg-gray-300">
-              <img 
-                src="/images/truck-placeholder.jpg" 
-                alt="Truck" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <h3 className="text-lg font-bold text-indigo-900">Ford F-150 2020</h3>
-              <p className="text-gray-600">28,000 {t('cars.mileage')}</p>
-              <div className="mt-2 flex justify-between items-center">
-                <span className="text-xl font-bold text-indigo-900">$32,900</span>
-                <Link 
-                  to="/buy" 
-                  className="text-indigo-600 hover:underline"
-                >
-                  {t('common.viewDetails')}
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="h-48 bg-gray-300">
-              <img 
-                src="/images/hummer-placeholder.jpg" 
-                alt="Hummer" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <h3 className="text-lg font-bold text-indigo-900">Hummer H1 2006</h3>
-              <p className="text-gray-600">45,000 {t('cars.mileage')}</p>
-              <div className="mt-2 flex justify-between items-center">
-                <span className="text-xl font-bold text-indigo-900">$64,500</span>
-                <Link 
-                  to="/buy" 
-                  className="text-indigo-600 hover:underline"
-                >
-                  {t('common.viewDetails')}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="text-center mt-8">
-          <Link 
-            to="/buy" 
-            className="bg-indigo-900 text-white px-6 py-3 rounded-lg inline-block font-bold hover:bg-indigo-800 transition duration-300"
-          >
-            {t('home.viewAllListings')}
-          </Link>
-        </div>
-      </section>
+      {/* Featured Cars Section - Now using dynamic data from API */}
+      <FeaturedCars />
     </div>
   );
 };
