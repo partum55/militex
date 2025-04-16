@@ -111,33 +111,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-indigo-900 text-white">
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold mb-8">{t('home.builtForHeroes')}</h2>
-          <div className="flex flex-col md:flex-row justify-center gap-4">
-            <Link
-              to="/buy"
-              className="bg-white text-indigo-900 px-6 py-3 rounded-lg font-bold hover:bg-indigo-50 transition duration-300"
-            >
-              {t('common.buy')}
-            </Link>
-            <Link
-              to="/sell"
-              className="border-2 border-white text-white px-6 py-3 rounded-lg font-bold hover:bg-white hover:text-indigo-900 transition duration-300"
-            >
-              {t('common.sell')}
-            </Link>
-            <Link
-              to="/fundraiser"
-              className="border-2 border-white text-white px-6 py-3 rounded-lg font-bold hover:bg-white hover:text-indigo-900 transition duration-300"
-            >
-              {t('common.fundraiser')}
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Featured Cars Section */}
       <section className="py-16 container mx-auto px-6">
         <h2 className="text-3xl font-bold text-center text-indigo-900 mb-12">

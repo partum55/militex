@@ -38,8 +38,23 @@ const CarService = {
   // Create a new car listing
   createCar: async (carData) => {
     try {
+      // Log what's being sent for debugging
+      console.log("Creating car with FormData containing:");
+      if (carData instanceof FormData) {
+        for (let key of carData.keys()) {
+          const value = carData.get(key);
+          if (value instanceof File) {
+            console.log(`${key}: File - ${value.name} (${value.type}, ${value.size} bytes)`);
+          } else {
+            console.log(`${key}: ${value}`);
+          }
+        }
+      }
+
       const response = await api.post('cars/', carData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       return response.data;
     } catch (error) {
@@ -74,8 +89,21 @@ const CarService = {
         }
       }
 
+      // Log what's being sent for debugging
+      console.log(`Updating car ${id} with FormData containing:`);
+      for (let key of formDataObj.keys()) {
+        const value = formDataObj.get(key);
+        if (value instanceof File) {
+          console.log(`${key}: File - ${value.name} (${value.type}, ${value.size} bytes)`);
+        } else {
+          console.log(`${key}: ${value}`);
+        }
+      }
+
       const response = await api.patch(`cars/${id}/`, formDataObj, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       return response.data;
     } catch (error) {

@@ -63,6 +63,68 @@ export const revokeFilePreview = (url) => {
 };
 
 /**
+ * Debug uploaded files to see what's being sent in form data
+ * @param {FormData} formData - The FormData object to debug
+ * @param {Function} logger - Logging function (defaults to console.log)
+ */
+export const debugFormData = (formData, logger = console.log) => {
+  if (!formData || !(formData instanceof FormData)) {
+    logger('Not a valid FormData object');
+    return;
+  }
+
+  logger('--- FormData Debug Start ---');
+  // Log each entry in the FormData object
+  for (let pair of formData.entries()) {
+    const [key, value] = pair;
+    if (value instanceof File) {
+      logger(`${key}: File object - name: ${value.name}, size: ${value.size} bytes, type: ${value.type}`);
+    } else {
+      logger(`${key}: ${value}`);
+    }
+  }
+  logger('--- FormData Debug End ---');
+};
+
+/**
+ * Check if the browser fully supports FormData functionality
+ * @returns {Object} Support status report
+ */
+export const checkBrowserFormDataSupport = () => {
+  const supportReport = {
+    formDataSupported: typeof FormData !== 'undefined',
+    fileReaderSupported: typeof FileReader !== 'undefined',
+    fileSupported: typeof File !== 'undefined',
+    blobSupported: typeof Blob !== 'undefined'
+  };
+
+  console.log('Browser FormData support:', supportReport);
+
+  // Create a test FormData to check if it works correctly
+  try {
+    const testData = new FormData();
+    const testBlob = new Blob(['test'], { type: 'text/plain' });
+    testData.append('testFile', testBlob, 'test.txt');
+    testData.append('testField', 'test value');
+
+    supportReport.canCreateFormData = true;
+    supportReport.canAppendToFormData = true;
+
+    // Check if we can read back the data
+    const testFile = testData.get('testFile');
+    supportReport.canRetrieveFile = testFile instanceof File || testFile instanceof Blob;
+    supportReport.canRetrieveField = testData.get('testField') === 'test value';
+
+    console.log('FormData functionality check:', supportReport);
+    return supportReport;
+  } catch (error) {
+    console.error('Error testing FormData functionality:', error);
+    supportReport.error = error.message;
+    return supportReport;
+  }
+};
+
+/**
  * Formats currency values
  * @param {number} value - The value to format
  * @param {string} currency - The currency code (default: USD)
