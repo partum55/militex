@@ -1,4 +1,20 @@
 import api from './api';
+import axios from 'axios';
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 
 const FundraiserService = {
   getAllFundraisers: async () => {
@@ -20,23 +36,26 @@ const FundraiserService = {
   },
   
   createFundraiser: async (fundraiserData) => {
-    // Use FormData for image upload
     const formData = new FormData();
-    
+
     Object.keys(fundraiserData).forEach((key) => {
-      if (key === 'image') {
-        formData.append(key, fundraiserData[key]);
-      } else {
-        formData.append(key, fundraiserData[key]);
-      }
+      formData.append(key, fundraiserData[key]);
     });
-    
+
     try {
+      // Спочатку отримай CSRF токен
+      await axios.get('/csrf/', { withCredentials: true });
+      const csrftoken = getCookie('csrftoken');
+
+      // Потім зроби запит на створення
       const response = await api.post('fundraisers/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'X-CSRFToken': csrftoken,
         },
+        withCredentials: true,
       });
+
       return response.data;
     } catch (error) {
       throw error;
@@ -52,5 +71,6 @@ const FundraiserService = {
     }
   },
 };
+
 
 export default FundraiserService;

@@ -20,6 +20,7 @@ import Register from './components/auth/Register.js';
 import ErrorPage from './components/common/ErrorPage.js';
 import MaintenancePage from './components/common/MaintenancePage.js';
 import axios from 'axios';
+import FundraiserPage from './pages/FundraiserPage.js';
 
 function App() {
   const { t } = useTranslation();
@@ -56,6 +57,7 @@ function App() {
                 </PrivateRoute>
               }
             />
+            <Route path="/fundraiser" element={<FundraiserPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route

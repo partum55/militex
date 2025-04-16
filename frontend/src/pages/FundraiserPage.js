@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../contexts/AuthContext';
-import FundraiserService from '../../services/fundraiser.service';
-import FundraiserCard from '../fundraiser/FundraiserCard';
-import DonationModal from '../fundraiser/DonationModal';
-import NewFundraiserModal from '../fundraiser/NewFundraiserModal';
+import { useAuth } from '../contexts/AuthContext';
+import FundraiserService from '../services/fundraiser.service';
+import FundraiserCard from '../components/fundraiser/FundraiserCard';
+import DonationModal from '../components/fundraiser/DonationModal';
+import NewFundraiserModal from '../components/fundraiser/NewFundraiserModal';
 
 const FundraiserPage = () => {
   const { t } = useTranslation();
