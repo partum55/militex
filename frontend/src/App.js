@@ -57,7 +57,14 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route path="/fundraiser" element={<FundraiserPage />} />
+            <Route 
+              path="/fundraiser" 
+              element={
+                <PrivateRoute>
+                  <FundraiserPage />
+                </PrivateRoute>
+              }
+            />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route

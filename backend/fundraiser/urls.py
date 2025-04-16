@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import FundraiserViewSet, DonationViewSet
 
 router = DefaultRouter()
-router.register(r'fundraisers', FundraiserViewSet)
+router.register(r'', FundraiserViewSet)
 router.register(r'donations', DonationViewSet)
 
 urlpatterns = [

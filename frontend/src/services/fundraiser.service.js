@@ -20,7 +20,7 @@ const FundraiserService = {
   getAllFundraisers: async () => {
     try {
       const response = await api.get('fundraisers/');
-      return response.data;
+      return response.data || response.data.results;
     } catch (error) {
       throw error;
     }

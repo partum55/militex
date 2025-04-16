@@ -12,7 +12,7 @@ urlpatterns = [
     path('api/', include('accounts.urls')),
     path('csrf/', csrf),
     path('api/cars/', include('cars.urls')),
-    path('api/fundraiser/', include('fundraiser.urls')),
+    path('api/fundraisers/', include('fundraiser.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 

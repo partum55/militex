@@ -18,10 +18,11 @@ class FundraiserViewSet(viewsets.ModelViewSet):
     serializer_class = FundraiserSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
+    # This should NOT be an @action - remove the decorator
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
-    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, IsOwnerOrReadOnly, permissions.IsAuthenticatedOrReadOnly])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     @transaction.atomic
     def donate(self, request, pk=None):
         fundraiser = self.get_object()
