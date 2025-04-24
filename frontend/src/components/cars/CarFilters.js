@@ -20,7 +20,7 @@ const CarFilters = ({ onFilterChange }) => {
     vehicle_type: '',
   });
 
-  // Makes list (could be fetched from API in real implementation)
+
   const makes = [
     'Ford', 'Toyota', 'Chevrolet', 'Honda', 'Jeep', 'BMW', 'Mercedes-Benz', 
     'Audi', 'Nissan', 'Volkswagen', 'Mitsubishi', 'Subaru', 'Hyundai', 'Kia'
@@ -28,7 +28,6 @@ const CarFilters = ({ onFilterChange }) => {
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      // Remove empty filters
       const nonEmptyFilters = Object.fromEntries(
         Object.entries(filters).filter(([_, value]) => value !== '')
       );
@@ -50,12 +49,10 @@ const CarFilters = ({ onFilterChange }) => {
     const { name, checked, value } = e.target;
     
     setFilters(prev => {
-      // If it's a single value checkbox
       if (name !== 'fuel_type' && name !== 'body_type') {
         return { ...prev, [name]: checked ? value : '' };
       }
-      
-      // For multi-select fields, we could implement as needed
+
       return prev;
     });
   };
