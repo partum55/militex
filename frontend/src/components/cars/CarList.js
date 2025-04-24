@@ -16,7 +16,6 @@ const CarList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Filter state
   const [filters, setFilters] = useState({
     make: '',
     model: '',
@@ -32,28 +31,23 @@ const CarList = () => {
     condition: '',
   });
 
-  // Options for filters
   const [makeOptions, setMakeOptions] = useState([]);
   const [modelOptions, setModelOptions] = useState([]);
   const [bodyTypes, setBodyTypes] = useState([]);
   const [fuelTypes, setFuelTypes] = useState([]);
 
-  // Load filter options on mount
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
         const response = await CarService.getAllCars();
         const cars = response.results || [];
 
-        // Extract unique makes
         const makes = [...new Set(cars.map(car => car.make))].sort();
         setMakeOptions(makes);
 
-        // Extract unique body types
         const bodies = [...new Set(cars.map(car => car.body_type).filter(Boolean))].sort();
         setBodyTypes(bodies);
 
-        // Extract unique fuel types
         const fuels = [...new Set(cars.map(car => car.fuel_type))].sort();
         setFuelTypes(fuels);
       } catch (error) {
@@ -64,7 +58,6 @@ const CarList = () => {
     fetchFilterOptions();
   }, []);
 
-  // Load models when make changes
   useEffect(() => {
     const fetchModelsForMake = async () => {
       if (!filters.make) {
@@ -85,7 +78,6 @@ const CarList = () => {
     fetchModelsForMake();
   }, [filters.make]);
 
-  // Fetch cars when filters, pagination, or search term change
   useEffect(() => {
     fetchCars();
   }, [filters, currentPage, searchTerm]);
@@ -99,7 +91,6 @@ const CarList = () => {
         search: searchTerm
       };
 
-      // Remove empty filter values
       Object.keys(params).forEach(key => {
         if (params[key] === '') {
           delete params[key];
@@ -128,7 +119,6 @@ const CarList = () => {
       [name]: value
     }));
 
-    // Reset model if make changes
     if (name === 'make') {
       setFilters(prev => ({
         ...prev,
@@ -136,7 +126,6 @@ const CarList = () => {
       }));
     }
 
-    // Reset to first page on filter change
     setCurrentPage(1);
   };
 
