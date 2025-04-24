@@ -1,4 +1,3 @@
-// frontend/src/components/layout/LanguageSelector.js
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
