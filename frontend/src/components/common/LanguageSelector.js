@@ -5,14 +5,12 @@ const LanguageSelector = () => {
   const { i18n, t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  
-  // Available languages
+
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'uk', name: 'Українська', flag: '🇺🇦' }
   ];
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -32,7 +30,6 @@ const LanguageSelector = () => {
     setIsOpen(false);
   };
 
-  // Get current language info
   const currentLang = languages.find(lang => lang.code === i18n.language) || languages[0];
 
   return (
