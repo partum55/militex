@@ -43,14 +43,12 @@ const FundraiserPage = () => {
     try {
       await FundraiserService.donate(selectedFundraiser.id, donationData);
 
-      // Refresh fundraisers to show updated amounts
       const response = await FundraiserService.getAllFundraisers();
       setFundraisers(response.results || []);
 
       setShowDonationModal(false);
       setSelectedFundraiser(null);
 
-      // Show success message
       setSuccessMessage(t('fundraiser.donationSuccess'));
       setTimeout(() => setSuccessMessage(''), 5000);
     } catch (error) {
@@ -64,13 +62,11 @@ const FundraiserPage = () => {
     try {
       await FundraiserService.createFundraiser(fundraiserData);
 
-      // Refresh fundraisers list to include the new one
       const response = await FundraiserService.getAllFundraisers();
       setFundraisers(response.results || []);
 
       setShowNewFundraiserModal(false);
 
-      // Show success message
       setSuccessMessage(t('fundraiser.createSuccess'));
       setTimeout(() => setSuccessMessage(''), 5000);
     } catch (error) {
