@@ -11,8 +11,7 @@ const DonationModal = ({ fundraiser, onClose, onSubmit, isAuthenticated }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Basic validation
+    
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
       setError(t('fundraiser.invalidAmount'));
       return;
