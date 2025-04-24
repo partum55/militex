@@ -51,7 +51,6 @@ const FeaturedCars = () => {
     );
   }
 
-  // Function to get primary image or use placeholder
   const getCarImage = (car) => {
     if (car.images && car.images.length > 0) {
       const primaryImage = car.images.find(img => img.is_primary);
