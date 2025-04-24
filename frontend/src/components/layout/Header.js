@@ -12,7 +12,6 @@ function Header() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const userDropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
