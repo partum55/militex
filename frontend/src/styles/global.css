@@ -1,9 +1,7 @@
-/* Tailwind Directives for v4 */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Styles */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -12,12 +10,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Rest of your CSS remains the same */
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-/* Utility Classes */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -32,7 +29,6 @@ code {
   overflow: hidden;
 }
 
-/* Animation for Loading Spinner */
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -43,7 +39,6 @@ code {
   animation: spin 1s linear infinite;
 }
 
-/* Custom Form Styling */
 input:focus, 
 textarea:focus, 
 select:focus {
@@ -51,7 +46,6 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
 }
 
-/* Helper Classes */
 .transition-all {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -70,7 +64,6 @@ select:focus {
   transition-duration: 150ms;
 }
 
-/* Responsive fixes for smaller screens */
 @media (max-width: 640px) {
   .container {
     padding-left: 1rem;
