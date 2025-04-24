@@ -13,32 +13,28 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Function to manually update authentication state
   const login = useCallback(async (userData) => {
     setCurrentUser(userData);
     setIsAuthenticated(true);
     setError(null);
   }, []);
 
-  // Load user data on mount
   useEffect(() => {
     const initAuth = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Check if we have a valid token
         if (AuthService.isAuthenticated()) {
           console.log("Valid token found, getting user data");
           try {
-            // Get user data using the token
+
             const userData = await AuthService.getCurrentUser();
             setCurrentUser(userData);
             setIsAuthenticated(true);
           } catch (userError) {
             console.error('Error fetching user data:', userError);
 
-            // Try to refresh token
             try {
               const newToken = await AuthService.refreshToken();
               if (newToken) {
@@ -57,7 +53,6 @@ export const AuthProvider = ({ children }) => {
           }
         } else {
           console.log("No valid token found");
-          // Try to refresh token
           try {
             const newToken = await AuthService.refreshToken();
             if (newToken) {
@@ -66,7 +61,6 @@ export const AuthProvider = ({ children }) => {
               setIsAuthenticated(true);
             }
           } catch (refreshError) {
-            // Refresh failed, ensure logout
             console.log("Token refresh failed, logging out");
             AuthService.logout();
             setCurrentUser(null);
@@ -87,7 +81,6 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  // Register function
   const register = async (userData) => {
     try {
       setLoading(true);
@@ -113,7 +106,6 @@ export const AuthProvider = ({ children }) => {
     window.location.href = '/';
   }, []);
 
-  // Update user profile
   const updateUserProfile = async (updatedData) => {
     try {
       setLoading(true);
@@ -132,7 +124,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Check token validity periodically (every 5 minutes)
   useEffect(() => {
     const checkTokenInterval = setInterval(() => {
       if (isAuthenticated && !AuthService.isAuthenticated()) {
@@ -161,7 +152,6 @@ export const AuthProvider = ({ children }) => {
     };
   }, [isAuthenticated, logout]);
 
-  // Context value
   const value = {
     currentUser,
     loading,
