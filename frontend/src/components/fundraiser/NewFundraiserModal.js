@@ -31,7 +31,6 @@ const NewFundraiserModal = ({ onClose, onSubmit }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Basic validation
     if (!title.trim()) {
       setError(t('fundraiser.titleRequired'));
       return;
