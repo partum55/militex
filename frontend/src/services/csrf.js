@@ -1,6 +1,5 @@
 import api from './api';
 
-
 const getCSRFToken = async () => {
   try {
     await api.get('/csrf/');
