@@ -21,12 +21,10 @@ const CarDetailPage = () => {
         const data = await CarService.getCarById(id);
         setCar(data);
 
-        // Fetch similar cars after getting the car details
         if (data) {
           fetchSimilarCars(data);
         }
 
-        // Scroll to top when car data is loaded
         window.scrollTo(0, 0);
       } catch (err) {
         setError('Failed to load vehicle details. Please try again later.');
@@ -41,7 +39,6 @@ const CarDetailPage = () => {
 
   const fetchSimilarCars = async (carData) => {
     try {
-      // Define filter criteria based on the current car
       const filters = {
         make: carData.make, // Same make
         vehicle_type: carData.vehicle_type, // Same vehicle type
@@ -49,10 +46,8 @@ const CarDetailPage = () => {
         max_price: carData.price * 1.3,
       };
 
-      // Exclude the current car from results
       const response = await CarService.getAllCars(filters);
 
-      // Filter out the current car and limit to 3 similar cars
       const filteredCars = response.results
         .filter(similarCar => similarCar.id !== parseInt(id))
         .slice(0, 3);
@@ -60,7 +55,6 @@ const CarDetailPage = () => {
       setSimilarCars(filteredCars);
     } catch (err) {
       console.error("Error fetching similar cars:", err);
-      // Don't set an error state here, as it's not critical functionality
     }
   };
 
@@ -100,7 +94,6 @@ const CarDetailPage = () => {
     );
   }
 
-  // Extract primary image or use first image
   const images = car.images.length > 0
     ? car.images
     : [{ image: '/images/car-placeholder.jpg' }];
