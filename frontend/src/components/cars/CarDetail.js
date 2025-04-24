@@ -12,11 +12,9 @@ const CarDetail = ({ car, onContactSeller }) => {
   };
 
   const handleContactSellerClick = () => {
-    // If this is an imported car with an original URL, open the original listing
     if (car.is_imported && car.original_url) {
       window.open(car.original_url, '_blank');
     } else {
-      // Otherwise use the regular contact seller functionality
       onContactSeller(car);
     }
   };
