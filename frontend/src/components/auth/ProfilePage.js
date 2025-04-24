@@ -19,21 +19,16 @@ const ProfilePage = () => {
       try {
         setLoading(true);
         
-        // Get user profile
         const userDataResponse = await AuthService.getCurrentUser();
         setUserData(userDataResponse);
         
-        // Get user's car listings
         const carsResponse = await CarService.getMyListings();
         setUserCars(carsResponse.results || []);
         
-        // Get user's fundraisers (in a real app you would implement this endpoint)
-        // This is a placeholder assuming the endpoint exists
         try {
           const fundraisersResponse = await FundraiserService.getMyFundraisers();
           setUserFundraisers(fundraisersResponse.results || []);
         } catch (err) {
-          // If endpoint doesn't exist, mock empty array
           setUserFundraisers([]);
         }
         
@@ -52,8 +47,7 @@ const ProfilePage = () => {
     if (window.confirm(t('profile.confirmDeleteCar'))) {
       try {
         await CarService.deleteCar(carId);
-        
-        // Update the cars list after deletion
+
         setUserCars(prevCars => prevCars.filter(car => car.id !== carId));
       } catch (err) {
         alert(t('profile.errorDeletingCar'));
