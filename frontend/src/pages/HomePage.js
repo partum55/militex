@@ -13,7 +13,6 @@ const HomePage = () => {
     const fetchFeaturedCars = async () => {
       try {
         setLoading(true);
-        // Increase limit from 3 to 6 to show more cars
         const response = await CarService.getAllCars({
           limit: 6,
           ordering: '-created_at'
