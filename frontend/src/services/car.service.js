@@ -1,8 +1,6 @@
-// frontend/src/services/car.service.js
 import api from './api';
 
 const CarService = {
-  // Get all cars with optional filters
   getAllCars: async (params = {}) => {
     try {
       const response = await api.get('cars/', { params });
@@ -13,7 +11,6 @@ const CarService = {
     }
   },
 
-  // Import cars from Auto.ria (admin only)
   importFromAutoria: async (limit = 10) => {
     try {
       const response = await api.post('cars/import_from_autoria/', { limit });
@@ -24,7 +21,6 @@ const CarService = {
     }
   },
 
-  // Get car by ID
   getCarById: async (id) => {
     try {
       const response = await api.get(`cars/${id}/`);
@@ -35,10 +31,8 @@ const CarService = {
     }
   },
 
-  // Create a new car listing
   createCar: async (carData) => {
     try {
-      // Log what's being sent for debugging
       console.log("Creating car with FormData containing:");
       if (carData instanceof FormData) {
         for (let key of carData.keys()) {
@@ -63,11 +57,8 @@ const CarService = {
     }
   },
 
-  // Update an existing car listing
   updateCar: async (id, carData) => {
     try {
-      // If carData is a FormData object, use it directly
-      // Otherwise, create one (for backward compatibility)
       let formDataObj = carData;
 
       if (!(carData instanceof FormData)) {
@@ -89,7 +80,6 @@ const CarService = {
         }
       }
 
-      // Log what's being sent for debugging
       console.log(`Updating car ${id} with FormData containing:`);
       for (let key of formDataObj.keys()) {
         const value = formDataObj.get(key);
@@ -112,7 +102,6 @@ const CarService = {
     }
   },
 
-  // Delete a car listing
   deleteCar: async (id) => {
     try {
       await api.delete(`cars/${id}/`);
@@ -123,7 +112,6 @@ const CarService = {
     }
   },
 
-  // Get user's own listings
   getMyListings: async () => {
     try {
       const response = await api.get('cars/my_listings/');
@@ -134,7 +122,6 @@ const CarService = {
     }
   },
 
-  // Search cars by keyword
   searchCars: async (searchQuery) => {
     try {
       const response = await api.get('cars/', {
@@ -147,7 +134,6 @@ const CarService = {
     }
   },
 
-  // Filter cars with multiple criteria
   filterCars: async (filters) => {
     try {
       const response = await api.get('cars/', { params: filters });
@@ -158,7 +144,6 @@ const CarService = {
     }
   },
 
-  // Get featured (latest) cars
   getFeaturedCars: async (limit = 3) => {
     try {
       const response = await api.get('cars/', {
@@ -174,7 +159,6 @@ const CarService = {
     }
   },
 
-  // Delete a specific car image
   deleteCarImage: async (imageId) => {
     try {
       await api.delete(`car-images/${imageId}/`);

@@ -19,12 +19,8 @@ const CarEditPage = () => {
         setLoading(true);
         const data = await CarService.getCarById(id);
 
-        // Transform image URLs to file objects for editing
-        // In a real app, you'd need to handle this differently as browsers can't directly
-        // convert existing URLs to File objects for security reasons
         setCarData({
           ...data,
-          // We'll only deal with new images uploaded during edit
           uploaded_images: []
         });
       } catch (err) {

@@ -1,9 +1,7 @@
-// src/services/auth.service.js
 import api from './api';
 import jwt_decode from 'jwt-decode';
 import axios from 'axios';
 
-// Helper function to get CSRF token
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -26,18 +24,13 @@ const USER_KEY = 'militex_user';
 const AuthService = {
   login: async (username, password) => {
     try {
-      // Clear any existing tokens first to avoid conflicts
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
-
-      // Get CSRF token first
       await axios.get('/csrf/', { withCredentials: true });
 
-      // Get CSRF token from cookie
       const csrftoken = getCookie('csrftoken');
 
-      // Make login request with CSRF token
       const response = await axios.post('/api/token/', {
         username,
         password,
@@ -52,15 +45,12 @@ const AuthService = {
       console.log("Login response:", response.data);
 
       if (response.data.access) {
-        // Store tokens in localStorage
         localStorage.setItem(TOKEN_KEY, response.data.access);
         localStorage.setItem(REFRESH_TOKEN_KEY, response.data.refresh);
 
-        // Set the token in the axios default headers
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
         api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
 
-        // Fetch user data immediately after login
         try {
           const userData = await api.get('/users/me/');
 
@@ -82,7 +72,7 @@ const AuthService = {
       }
     } catch (error) {
       console.error('Login error:', error);
-      // Clear any partial auth data
+
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
@@ -91,12 +81,10 @@ const AuthService = {
   },
 
   logout: () => {
-    // Clear auth data
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
 
-    // Remove the Authorization header
     delete axios.defaults.headers.common['Authorization'];
     delete api.defaults.headers.common['Authorization'];
 
@@ -105,23 +93,19 @@ const AuthService = {
 
   getCurrentUser: async () => {
     try {
-      // First check if we have user data in localStorage
       const userStr = localStorage.getItem(USER_KEY);
       if (userStr) {
         return JSON.parse(userStr);
       }
 
-      // If no user data, check if we have a token
       const token = AuthService.getToken();
       if (!token) {
         throw new Error('No authentication token found');
       }
 
-      // Set authorization header
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      // Fetch user data from API
       const response = await api.get('/users/me/');
       if (response.data) {
         localStorage.setItem(USER_KEY, JSON.stringify(response.data));
@@ -130,7 +114,6 @@ const AuthService = {
         throw new Error("Failed to get user data");
       }
     } catch (error) {
-      // If 401 error, try to refresh token
       if (error.response && error.response.status === 401) {
         try {
           await AuthService.refreshToken();
@@ -138,12 +121,10 @@ const AuthService = {
           localStorage.setItem(USER_KEY, JSON.stringify(response.data));
           return response.data;
         } catch (refreshError) {
-          // If refresh fails, logout
           AuthService.logout();
           throw refreshError;
         }
       }
-      // For other errors, also ensure user is logged out to prevent state inconsistencies
       AuthService.logout();
       throw error;
     }
@@ -165,7 +146,6 @@ const AuthService = {
         throw new Error('No refresh token available');
       }
 
-      // Get CSRF token
       await axios.get('/csrf/', { withCredentials: true });
       const csrftoken = getCookie('csrftoken');
 
@@ -180,10 +160,8 @@ const AuthService = {
       });
 
       if (response.data && response.data.access) {
-        // Update token in localStorage
         localStorage.setItem(TOKEN_KEY, response.data.access);
 
-        // Update authorization headers
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
         api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
 
@@ -193,7 +171,6 @@ const AuthService = {
       }
     } catch (error) {
       console.error("Token refresh error:", error);
-      // Clear tokens on refresh failure
       AuthService.logout();
       throw error;
     }
@@ -206,7 +183,6 @@ const AuthService = {
       const decoded = jwt_decode(token);
       const currentTime = Date.now() / 1000;
 
-      // Check if token is expired
       return decoded.exp > currentTime;
     } catch (error) {
       return false;

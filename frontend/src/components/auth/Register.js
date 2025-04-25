@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AuthService from '../../services/auth.service';
 import axios from 'axios';
 
-// Helper function to get CSRF token
+
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -47,7 +47,6 @@ const Register = () => {
       [name]: type === 'checkbox' ? checked : value,
     }));
 
-    // Clear errors for this field when user types
     if (errors[name]) {
       setErrors(prev => {
         const newErrors = {...prev};
@@ -126,14 +125,11 @@ const Register = () => {
     setErrors({});
 
     try {
-      // Extract data for registration (excluding confirmPassword)
       const { confirmPassword, ...userData } = formData;
 
-      // Get CSRF token first
       await axios.get('/csrf/', { withCredentials: true });
       const csrftoken = getCookie('csrftoken');
 
-      // Make registration request with CSRF token
       const response = await axios.post('/api/users/', userData, {
         headers: {
           'Content-Type': 'application/json',
@@ -144,15 +140,12 @@ const Register = () => {
 
       console.log("Registration successful:", response.data);
 
-      // If registration successful, log the user in
       try {
         await AuthService.login(formData.username, formData.password);
-
-        // Navigate to home page
         navigate('/');
       } catch (loginError) {
         console.error("Login after registration failed:", loginError);
-        // Even if login fails, we'll consider registration successful and redirect to login
+
         setGeneralError(t('auth.registrationSuccessLoginFailed'));
         setTimeout(() => {
           navigate('/login');
@@ -161,18 +154,15 @@ const Register = () => {
     } catch (err) {
       console.error('Registration error:', err);
 
-      // Format error message from API response if available
       if (err.response?.data) {
         const newErrors = {};
 
-        // Process each error field from the API response
         Object.entries(err.response.data).forEach(([field, message]) => {
           if (Array.isArray(message)) {
             newErrors[field] = message.join(', ');
           } else if (typeof message === 'string') {
             newErrors[field] = message;
           } else if (typeof message === 'object') {
-            // For nested error objects
             Object.entries(message).forEach(([nestedField, nestedMessage]) => {
               newErrors[`${field}.${nestedField}`] = nestedMessage;
             });

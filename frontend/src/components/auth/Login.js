@@ -13,10 +13,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Check if there's a redirect from another page
   const { from } = location.state || { from: { pathname: '/' } };
 
-  // Clear error when form changes
   useEffect(() => {
     if (error) setError('');
   }, [username, password]);
@@ -24,7 +22,6 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Basic validation
     if (!username.trim() || !password) {
       setError(t('auth.fillAllFields'));
       return;
@@ -36,19 +33,15 @@ const Login = () => {
     try {
       await AuthService.login(username, password);
 
-      // Get current user data
       const user = await AuthService.getCurrentUser();
 
-      // Redirect to the page user came from, or home
       navigate(from.pathname);
     } catch (error) {
       console.error('Login error:', error);
 
       if (error.response) {
-        // Handle different error status codes
         switch (error.response.status) {
           case 400:
-            // Bad request - usually validation errors
             if (error.response.data.detail) {
               setError(error.response.data.detail);
             } else if (error.response.data.non_field_errors) {
@@ -58,32 +51,26 @@ const Login = () => {
             }
             break;
           case 401:
-            // Unauthorized
             setError(t('auth.invalidCredentials'));
             break;
           case 403:
-            // Forbidden
             setError(t('auth.accountLocked'));
             break;
           case 429:
-            // Too many requests
             setError(t('auth.tooManyAttempts'));
             break;
           case 500:
           case 502:
           case 503:
           case 504:
-            // Server errors
             setError(t('errors.serverError'));
             break;
           default:
             setError(t('auth.loginFailed'));
         }
       } else if (error.request) {
-        // Network error
         setError(t('errors.networkError'));
       } else {
-        // Something else went wrong
         setError(t('auth.loginFailed'));
       }
     } finally {

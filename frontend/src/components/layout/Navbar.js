@@ -5,8 +5,7 @@ import { useTranslation } from 'react-i18next';
 const Navbar = () => {
   const { t } = useTranslation();
   const location = useLocation();
-  
-  // Define main navigation links
+
   const navLinks = [
     { path: '/', label: 'common.home' },
     { path: '/buy', label: 'common.buy' },

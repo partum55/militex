@@ -3,9 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import fonts */
-
-/* Root variables for consistent theming */
 :root {
   /* Primary color palette */
   --color-primary: #312e81; /* indigo-900 */
@@ -13,24 +10,20 @@
   --color-primary-light: #4338ca; /* indigo-700 */
   --color-primary-bg: #eef2ff; /* indigo-50 */
 
-  /* Secondary colors */
   --color-secondary: #6366f1; /* indigo-500 */
   --color-accent: #c7d2fe; /* indigo-200 */
 
-  /* Text colors */
   --color-text-primary: #1f2937; /* gray-800 */
   --color-text-secondary: #4b5563; /* gray-600 */
   --color-text-light: #9ca3af; /* gray-400 */
   --color-text-on-primary: #ffffff;
 
-  /* Status colors */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
 }
 
-/* Base element styling */
 @layer base {
   html {
     @apply font-sans text-gray-800 antialiased;
@@ -65,15 +58,14 @@
     @apply text-indigo-900 hover:text-indigo-700 transition-colors;
   }
 
-  /* Focus styles for accessibility */
+
   *:focus-visible {
     @apply outline-none ring-2 ring-indigo-500 ring-offset-2;
   }
 }
 
-/* Component classes */
+
 @layer components {
-  /* Buttons */
   .btn {
     @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors;
   }
@@ -110,7 +102,6 @@
     @apply p-2 rounded-full;
   }
 
-  /* Cards */
   .card {
     @apply bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg;
   }
@@ -127,7 +118,6 @@
     @apply px-4 py-3 bg-gray-50 border-t border-gray-200;
   }
 
-  /* Forms */
   .form-group {
     @apply mb-4;
   }
@@ -152,7 +142,6 @@
     @apply border-gray-300 text-indigo-900 focus:ring-indigo-500;
   }
 
-  /* Navigation */
   .nav-link {
     @apply px-4 py-2 text-gray-200 hover:text-white transition-colors;
   }
@@ -161,7 +150,6 @@
     @apply text-white font-medium;
   }
 
-  /* Alerts */
   .alert {
     @apply p-4 mb-4 rounded-lg;
   }
@@ -182,7 +170,6 @@
     @apply bg-info-50 text-info-700 border border-info-100;
   }
 
-  /* Badges */
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
@@ -195,7 +182,6 @@
     @apply bg-gray-100 text-gray-800;
   }
 
-  /* Car card specific components */
   .car-card {
     @apply bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1;
   }
@@ -225,7 +211,6 @@
   }
 }
 
-/* Custom utilities */
 @layer utilities {
   .text-shadow {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -250,12 +235,10 @@
   }
 }
 
-/* Animation classes */
 .loader {
   @apply inline-block w-10 h-10 border-4 border-gray-300 border-t-indigo-900 rounded-full animate-spin;
 }
 
-/* Special layouts */
 .auth-container {
   @apply flex min-h-screen;
 }
@@ -280,8 +263,6 @@
   @apply relative z-10 container mx-auto px-6;
 }
 
-/* Media queries
-Only add here if you need something not covered by Tailwind's responsive classes */
 @media print {
   .no-print {
     display: none !important;

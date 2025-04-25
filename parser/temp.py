@@ -29,16 +29,6 @@ def extract_from_labels(soup, label_name):
             return argument.get_text(strip=True) if argument else "Невідомо"
     return "Невідомо"
 
-# Функцію extract_body_type_from_card видаляємо, оскільки дані про кузов буде отримуватись з другого коду
-# def extract_body_type_from_card(url):
-#     response = requests.get(url, headers=headers)
-#     soup = BeautifulSoup(response.text, 'html.parser')
-#     body_tag = soup.select_one("div.technical-info dl.unstyle > dd")
-#     if body_tag:
-#         full_text = body_tag.get_text(" ", strip=True)
-#         return full_text.split('•')[0].strip() if '•' in full_text else full_text.strip()
-#     return "Невідомо"
-
 def extract_description(soup):
     desc_tag = soup.select_one("dd.additional-data.show-line")
     return desc_tag.get_text(strip=True) if desc_tag else "Опис відсутній"
@@ -71,7 +61,6 @@ def parse_car_details(url):
         fuel_type = fuel_type_raw.strip().split()[-1] if extract_from_labels(soup, "Двигун") != "Невідомо" else "Невідомо"
     transmission = extract_from_labels(soup, "коробка передач")
     
-    # Використовуємо значення кузова, як у другому коді
     body_type = "Позашляховик / Кросовер"
     
     condition_tag = soup.find("span", class_="label", string=re.compile("Технічний стан", re.IGNORECASE))
