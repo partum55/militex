@@ -34,6 +34,18 @@ const LocationPriceStep = ({
       return false;
     }
 
+    // When creating a new car, require at least one image
+    if (!isEditing && uploadedImages.length === 0) {
+      alert('Please upload at least one image of your vehicle');
+      return false;
+    }
+
+    // When editing, make sure there's at least one image (either existing or new)
+    if (isEditing && existingImages.length === 0 && uploadedImages.length === 0) {
+      alert('Please keep at least one image or upload a new one');
+      return false;
+    }
+
     return true;
   };
 
@@ -160,6 +172,7 @@ const LocationPriceStep = ({
       <div className="mb-6">
         <label className="block text-gray-700 mb-2">
           {isEditing ? t('cars.addMorePhotos') : t('cars.uploadPhoto')}
+          {!isEditing && " *"}
         </label>
         <div
           {...getRootProps()}
@@ -167,7 +180,7 @@ const LocationPriceStep = ({
             isDragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:border-indigo-500'
           }`}
         >
-          <input {...getInputProps()} />
+          <input {...getInputProps()} accept="image/*" />
           {isDragActive ? (
             <p className="text-indigo-600">{t('forms.dropFilesHere')}</p>
           ) : (

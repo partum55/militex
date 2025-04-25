@@ -18,7 +18,32 @@ if (token) {
 // Add logging for debugging API requests
 api.interceptors.request.use(
   (config) => {
-    console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, config.params || {});
+    // Special handling for file uploads
+    if (config.headers['Content-Type'] === 'multipart/form-data') {
+      console.log(`API File Upload Request: ${config.method?.toUpperCase()} ${config.url}`);
+
+      // If the request has data and it's a FormData, log some info about it
+      if (config.data instanceof FormData) {
+        // Count files and fields
+        let fileCount = 0;
+        let fieldCount = 0;
+        const keys = new Set();
+
+        for (let pair of config.data.entries()) {
+          keys.add(pair[0]);
+          if (pair[1] instanceof File || pair[1] instanceof Blob) {
+            fileCount++;
+          } else {
+            fieldCount++;
+          }
+        }
+
+        console.log(`FormData contains ${fileCount} file field(s) and ${fieldCount} regular field(s)`);
+        console.log(`FormData keys: ${Array.from(keys).join(', ')}`);
+      }
+    } else {
+      console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, config.params || {});
+    }
 
     // Check token before each request
     const token = localStorage.getItem('militex_token');
@@ -41,12 +66,20 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
-    // Log the error for debugging
-    console.error('API Error:', error.response?.data || error.message);
-
-    const originalRequest = error.config;
+    // Log detailed error info for file uploads
+    if (error.config?.headers?.['Content-Type'] === 'multipart/form-data') {
+      console.error('File Upload Error:', {
+        url: error.config.url,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
+    } else {
+      console.error('API Error:', error.response?.data || error.message);
+    }
 
     // If error is 401 and we haven't tried refreshing yet
+    const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 

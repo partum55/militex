@@ -45,21 +45,28 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
 
   // File upload handling
   const onDrop = useCallback((acceptedFiles) => {
+    // Create proper File objects with previews
+    const filesWithPreviews = acceptedFiles.map(file =>
+      Object.assign(file, {
+        preview: createFilePreview(file)
+      })
+    );
+
     setFormData(prevData => ({
       ...prevData,
       uploaded_images: [
         ...prevData.uploaded_images,
-        ...acceptedFiles.map(file => Object.assign(file, {
-          preview: createFilePreview(file)
-        }))
+        ...filesWithPreviews
       ]
     }));
-  }, []);
+
+    console.log(`Dropped ${acceptedFiles.length} files. Total images: ${formData.uploaded_images.length + acceptedFiles.length}`);
+  }, [formData.uploaded_images.length]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png']
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp']
     },
     maxSize: 5242880, // 5MB
   });
@@ -176,6 +183,20 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
     return true;
   };
 
+  // Helper function to debug FormData
+  const debugFormData = (formData) => {
+    console.log('--- FormData Debug Start ---');
+    for (let pair of formData.entries()) {
+      const [key, value] = pair;
+      if (value instanceof File) {
+        console.log(`${key}: File object - name: ${value.name}, size: ${value.size} bytes, type: ${value.type}`);
+      } else {
+        console.log(`${key}: ${value}`);
+      }
+    }
+    console.log('--- FormData Debug End ---');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -214,6 +235,10 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
         formDataToSubmit.append('images_to_delete', JSON.stringify(formData.images_to_delete));
       }
 
+      // Debug what's being sent
+      console.log(`Submitting form with ${formData.uploaded_images.length} new images and ${formData.images_to_delete.length} images to delete`);
+      debugFormData(formDataToSubmit);
+
       if (isEditing && carId) {
         // For editing, we'll need to handle existing images differently
         await CarService.updateCar(carId, formDataToSubmit);
@@ -241,10 +266,20 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
       }
     } catch (error) {
       console.error('Submission error:', error);
-      setError(
-        error.response?.data?.detail ||
-        'Failed to submit. Please check your information and try again.'
-      );
+      let errorMessage = 'Failed to submit. Please check your information and try again.';
+
+      // Try to extract more detailed error messages
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.detail) {
+          errorMessage = error.response.data.detail;
+        } else if (error.response.data.error) {
+          errorMessage = error.response.data.error;
+        }
+      }
+
+      setError(errorMessage);
       window.scrollTo(0, 0);
     } finally {
       setLoading(false);
