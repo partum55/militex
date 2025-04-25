@@ -9,37 +9,66 @@ from asgiref.sync import sync_to_async
 from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
 from .models import Car, CarImage
-
+import random
+import time
 User = get_user_model()
 
 headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
 BASE_URL = 'https://auto.ria.com/uk/search/?indexName=auto&body.id[0]=5&category_id=1&page=1'
 
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+    "Mozilla/5.0 (X11; Linux x86_64)",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_2 like Mac OS X)",
+]
+
 def get_suv_links(limit=100):
-    """Get links to SUV car listings from auto.ria.com"""
+    """Get links to SUV car listings from auto.ria.com with random delays and headers"""
     links = []
     page = 1
-    
+
     while len(links) < limit:
+        headers = {
+            'User-Agent': random.choice(USER_AGENTS),
+        }
         url = BASE_URL.replace('page=1', f'page={page}')
-        response = requests.get(url, headers=headers)
+        print(f"[PAGE {page}] Fetching: {url}")
+
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            print(f"→ Status code: {response.status_code}")
+            response.raise_for_status()
+        except Exception as e:
+            print(f"❌ Request failed on page {page}: {e}")
+            break
+
         soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Find all car links on the page
+        page_links = []
+
         for a in soup.select('a.address[href]'):
             href = a['href']
-            if href.startswith('https://auto.ria.com'):
+            if href.startswith('https://auto.ria.com') and href not in links:
+                page_links.append(href)
                 links.append(href)
                 if len(links) >= limit:
                     break
-        
-        # Move to next page if we need more links
+
+        print(f"✅ Found {len(page_links)} new links on page {page} (total: {len(links)})")
+
+        # next_page = soup.select_one('span.page-item.next a')
+        # if not next_page:
+        #     print("🛑 No more pages available.")
+        #     break
+
         page += 1
-        # Check if there's a next page
-        next_page = soup.select_one('span.page-item.next a')
-        if not next_page or len(links) >= limit:
-            break
-    
+
+        # Random sleep between 0.5 and 2 seconds to avoid rate limiting
+        delay = round(random.uniform(0.5, 2.0), 2)
+        print(f"⏳ Sleeping for {delay}s")
+        time.sleep(delay)
+
+    print(f"🏁 Finished collecting {len(links)} links.")
     return links[:limit]
 
 def extract_from_labels(soup, label_name):
@@ -64,7 +93,7 @@ def extract_description(soup):
     
     return ""
 
-def extract_image_urls(soup, limit=5):
+def extract_image_urls(soup, limit=100):
     """Extract car image URLs from the page"""
     image_urls = []
     
@@ -271,7 +300,7 @@ async def download_image(url):
         print(f"Error downloading image from {url}: {e}")
         return None
 
-async def import_cars_from_autoria(limit=20, admin_user_id=1):
+async def import_cars_from_autoria(limit=100, admin_user_id=1):
     """Import cars from auto.ria.com and save to the database"""
     links = get_suv_links(limit=limit)
     imported_count = 0
@@ -298,7 +327,6 @@ async def import_cars_from_autoria(limit=20, admin_user_id=1):
         
         # Create new car
         image_urls = car_data.pop("image_urls", [])
-        print(image_urls)
         source_url = car_data.pop("source_url", "")
         
         car = await sync_to_async(Car.objects.create)(
@@ -324,7 +352,7 @@ async def import_cars_from_autoria(limit=20, admin_user_id=1):
     
     return imported_count
 
-def import_cars_sync(limit=20, admin_user_id=1):
+def import_cars_sync(limit=100, admin_user_id=1):
     """Synchronous wrapper for import_cars_from_autoria"""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -332,12 +360,12 @@ def import_cars_sync(limit=20, admin_user_id=1):
     loop.close()
     return result
 
-# Command-line interface for testing
-if __name__ == "__main__":
-    import sys
-    limit = int(sys.argv[1]) if len(sys.argv) > 1 else 5
-    admin_id = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+# # Command-line interface for testing
+# if __name__ == "__main__":
+#     import sys
+#     limit = int(sys.argv[1]) if len(sys.argv) > 1 else 5
+#     admin_id = int(sys.argv[2]) if len(sys.argv) > 2 else 1
 
-    print(f"Importing up to {limit} cars...")
-    count = import_cars_from_autoria(limit=limit, admin_user_id=admin_id)
-    print(f"Successfully imported {count} cars")
+#     print(f"Importing up to {limit} cars...")
+#     count = import_cars_from_autoria(limit=100, admin_user_id=admin_id)
+#     print(f"Successfully imported {count} cars")
