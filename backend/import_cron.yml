@@ -1,0 +1,13 @@
+name: Daily Import
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # кожен день о 03:00 ранку UTC
+  workflow_dispatch:      # дозволяє запускати вручну
+
+jobs:
+  call-endpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call import endpoint
+        run: curl https://militex.koyeb.app/run-import/
