@@ -164,6 +164,6 @@ if __name__ == "__main__":
     print(f"Imported {count} cars from Auto.ria")
 
     # 2. Імпорт з SQLite-файлу
-    import_cars_data()
+    # import_cars_data()
 
     print("Data import completed!")

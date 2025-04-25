@@ -298,6 +298,7 @@ async def import_cars_from_autoria(limit=20, admin_user_id=1):
         
         # Create new car
         image_urls = car_data.pop("image_urls", [])
+        print(image_urls)
         source_url = car_data.pop("source_url", "")
         
         car = await sync_to_async(Car.objects.create)(
