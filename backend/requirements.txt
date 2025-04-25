@@ -1,7 +1,24 @@
+asgiref==3.8.1
+beautifulsoup4==4.13.4
+bs4==0.0.2
+certifi==2025.1.31
+charset-normalizer==3.4.1
 Django==4.2.11
-djangorestframework==3.14.0
-djangorestframework-simplejwt==5.3.1
 django-cors-headers==4.3.1
 django-filter==23.5
-# Pillow==10.2.0
+djangorestframework==3.14.0
+djangorestframework-simplejwt==5.3.1
+dj-database-url==2.1.0
+gunicorn==21.2.0
+idna==3.10
+pillow==11.2.1
+PyJWT==2.10.1
+pytz==2025.2
+requests==2.32.3
 setuptools==69.1.1
+soupsieve==2.7
+sqlparse==0.5.3
+typing_extensions==4.13.2
+tzdata==2025.2
+urllib3==2.4.0
+whitenoise==6.6.0

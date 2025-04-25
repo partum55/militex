@@ -1,0 +1,37 @@
+2025-04-24 15:27:06,970 [INFO] Initial car import starting...
+2025-04-24 15:27:06,985 [INFO] Starting Auto.ria parser...
+2025-04-24 15:27:06,985 [INFO] Parser scheduler started
+2025-04-24 15:27:06,985 [INFO] Parser scheduler thread started
+2025-04-24 15:27:06,985 [INFO] Car parser scheduler started
+2025-04-24 15:27:06,985 [INFO] Checking 10 existing imported cars
+2025-04-24 15:27:07,001 [INFO] Watching for file changes with StatReloader
+2025-04-24 15:27:11,255 [WARNING] Unauthorized: /api/cars/
+2025-04-24 15:27:11,271 [WARNING] Unauthorized: /api/cars/
+2025-04-24 15:27:12,772 [WARNING] Unauthorized: /api/cars/
+2025-04-24 15:27:12,774 [WARNING] Unauthorized: /api/cars/
+2025-04-24 15:27:12,824 [WARNING] Unauthorized: /api/cars/
+2025-04-24 15:27:12,825 [WARNING] Unauthorized: /api/cars/
+2025-04-24 15:27:14,265 [INFO] Checked existing cars: 0 cars removed or marked as sold
+2025-04-24 15:27:15,124 [INFO] Found 10 SUV links
+2025-04-24 15:27:15,741 [INFO] [SKIP] Car already exists: Land Rover Range Rover (2014)
+2025-04-24 15:27:16,442 [INFO] [SKIP] Car already exists: Lexus GX (2012)
+2025-04-24 15:27:18,218 [INFO] [SKIP] Car already exists: Land Rover Range Rover (2024)
+2025-04-24 15:27:18,777 [INFO] [SKIP] Car already exists: Lexus GX (2009)
+2025-04-24 15:27:19,479 [INFO] [SKIP] Car already exists: Land Rover Range Rover (2023)
+2025-04-24 15:27:20,123 [INFO] [SKIP] Car already exists: Tesla Model Y (2022)
+2025-04-24 15:27:20,671 [INFO] [SKIP] Car already exists: Volkswagen Touareg (2017)
+2025-04-24 15:27:21,174 [INFO] [SKIP] Car already exists: Infiniti FX 35 (2006)
+2025-04-24 15:27:21,870 [INFO] [SKIP] Car already exists: Volkswagen Tiguan (2012)
+2025-04-24 15:27:22,672 [INFO] [SKIP] Car already exists: Porsche Cayenne (2012)
+2025-04-24 15:27:22,673 [INFO] Imported 0 new cars
+2025-04-24 15:27:22,674 [INFO] Parser completed successfully
+2025-04-24 15:54:25,992 [INFO] Parser scheduler started
+2025-04-24 15:54:25,992 [INFO] Parser scheduler thread started
+2025-04-24 15:54:25,992 [INFO] Car parser scheduler started
+2025-04-24 15:54:25,992 [INFO] Watching for file changes with StatReloader
+2025-04-24 15:54:30,303 [WARNING] Unauthorized: /api/cars/
+2025-04-24 15:54:30,351 [WARNING] Unauthorized: /api/cars/
+2025-04-24 15:54:33,675 [WARNING] Unauthorized: /api/cars/
+2025-04-24 15:54:33,676 [WARNING] Unauthorized: /api/cars/
+2025-04-24 15:54:33,735 [WARNING] Unauthorized: /api/cars/
+2025-04-24 15:54:33,736 [WARNING] Unauthorized: /api/cars/

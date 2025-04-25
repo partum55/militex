@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+    environment:
+      - DEBUG=True
+      - DATABASE_URL=sqlite:///db.sqlite3
+      - SECRET_KEY=cronenburg-123890
+    command: sh -c "cd backend && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
