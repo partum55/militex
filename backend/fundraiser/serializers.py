@@ -23,6 +23,8 @@ class FundraiserSerializer(serializers.ModelSerializer):
     donations = DonationSerializer(many=True, read_only=True)
     progress_percentage = serializers.ReadOnlyField()
     created_by_username = serializers.ReadOnlyField(source='created_by.username')
+    image = serializers.ImageField(required=False, allow_null=True)
+
 
     class Meta:
         model = Fundraiser

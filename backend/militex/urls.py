@@ -5,23 +5,27 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .views import csrf
+from .views import csrf, run_import
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('accounts.urls')),
     path('csrf/', csrf),
     path('api/cars/', include('cars.urls')),
-    path('api/fundraiser/', include('fundraiser.urls')),
+    path('api/fundraisers/', include('fundraiser.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('run-import/', run_import),
 
     # Move this catch-all route to the END of the urlpatterns
     # Ensure this is AFTER all other routes
-    re_path(r'^.*$', TemplateView.as_view(template_name='index.html'), name='index'),
 ]
 
 # For development only - serve static and media files
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += [
+    re_path(r'^.*$', TemplateView.as_view(template_name='index.html'), name='index'),
+]

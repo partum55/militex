@@ -11,7 +11,7 @@ const CarService = {
     }
   },
 
-  importFromAutoria: async (limit = 10) => {
+  importFromAutoria: async (limit = 50) => {
     try {
       const response = await api.post('cars/import_from_autoria/', { limit });
       return response.data;
