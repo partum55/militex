@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import LanguageSelector from '../common/LanguageSelector';
+import { getImagePath, IMAGE_PATHS } from '../../utils/imagePaths';
 
 function Header() {
   const { t } = useTranslation();
@@ -40,7 +41,7 @@ function Header() {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <Link to="/" className="mr-6">
-            <img src="/logo.png" alt="Militex Logo" className="h-8" />
+            <img src={getImagePath(IMAGE_PATHS.LOGO)} alt="Militex Logo" className="h-8" />
           </Link>
 
           {/* Main Navigation - Desktop */}

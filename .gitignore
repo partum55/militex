@@ -6,3 +6,5 @@ db.sqlite3
 .env
 build/
 node_modules/
+staticfiles/
+frontend_build/

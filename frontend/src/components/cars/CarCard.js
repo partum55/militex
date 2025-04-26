@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { getImagePath, IMAGE_PATHS } from '../../utils/imagePaths';
 
 const PLACEHOLDER_IMAGE_DATA = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNTAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNMTAwIDUwQzEwNy45NTYgNTAgMTE0LjYyIDQ1LjQ2MyAxMTQuNjIgMzguMzIxQzExMy40NDkgMzEuMzc4IDEwNy45NTYgMjUgMTAwIDI1QzkyLjA0MzkgMjUgODUuMzc5OSAzMS4zNzggODUuMzc5OSAzOC4zMjFDODUuMzc5OSA0NS40NjMgOTIuMDQzOSA1MCAxMDAgNTBaIiBmaWxsPSIjQTNBM0EzIi8+PHBhdGggZD0iTTEzNS40NDkgMTA1SDY0LjU1MDVDNjQuNTUwNSAxMDUuMDAyIDY0LjU1MDUgMTA1LjAwNSA2NC41NTA1IDEwNS4wMDhDNjQuNTUwNSA5My4wOTcgODAuMzczOCA4My4zNzUgMTAwIDgzLjM3NUMxMTkuNjI2IDgzLjM3NSAxMzUuNDQ5IDkzLjA5NyAxMzUuNDQ5IDEwNS4wMDhDMTM1LjQ0OSAxMDUuMDA1IDEzNS40NDkgMTA1LjAwMiAxMzUuNDQ5IDEwNVoiIGZpbGw9IiNBM0EzQTMiLz48dGV4dCB4PSIxMDAiIHk9IjEzNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNzE3MTcxIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
 
@@ -23,7 +24,7 @@ const OptimizedImage = memo(({ src, alt, className, onError }) => {
       setImageSrc(src);
     };
     img.onerror = () => {
-      setImageSrc(PLACEHOLDER_IMAGE_DATA);
+      setImageSrc(getImagePath(IMAGE_PATHS.CAR_PLACEHOLDER));
       setHasError(true);
       if (onError) onError();
     };
@@ -46,6 +47,7 @@ const OptimizedImage = memo(({ src, alt, className, onError }) => {
     />
   );
 });
+
 const CarCard = ({ car }) => {
   const { t } = useTranslation();
 
@@ -56,26 +58,14 @@ const CarCard = ({ car }) => {
       </div>
     );
   }
-  const BASE_IMAGE_URL = 'http://127.0.0.1:8000'; 
+
   const getPrimaryImageUrl = () => {
     if (car.images && car.images.length > 0) {
       const primaryImage = car.images.find(img => img.is_primary);
       const imagePath = primaryImage ? primaryImage.image : car.images[0].image;
-  
-      if (!imagePath) return null;
-  
-      if (imagePath.startsWith('http')) {
-        return imagePath;
-      }
-  
-      // Додаємо слеш, якщо його нема
-      const normalizedPath = imagePath.startsWith('/')
-        ? imagePath
-        : `/${imagePath}`;
-  
-      return `${BASE_IMAGE_URL}${normalizedPath}`;
+      return getImagePath(imagePath);
     }
-    return null;
+    return getImagePath(IMAGE_PATHS.CAR_PLACEHOLDER);
   };
 
   const priceFormatted = typeof car.price === 'number'

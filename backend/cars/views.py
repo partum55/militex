@@ -39,11 +39,23 @@ class CarViewSet(viewsets.ModelViewSet):
         # Print out debug info
         debug_info = {
             'Content-Type': request.content_type,
-            'POST keys': list(request.POST.keys()),
+            'POST keys': list(request.POST.keys() if hasattr(request.POST, 'keys') else []),
             'FILES keys': list(request.FILES.keys()),
+            'FILES count': len(request.FILES),
         }
         print("Create request debug info:", debug_info)
 
+        # Handle multipart/form-data and application/json differently
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            # For multipart forms, handle images properly
+            image_files = request.FILES.getlist('images')
+            
+            if image_files:
+                request.data._mutable = True
+                request.data['image_files'] = image_files
+                request.data._mutable = False
+                print(f"Processed {len(image_files)} images")
+        
         # Process the create normally
         return super().create(request, *args, **kwargs)
 

@@ -55,4 +55,4 @@ class SellerRatingViewSet(viewsets.ModelViewSet):
         seller_id = self.request.query_params.get('seller', None)
         if seller_id:
             queryset = queryset.filter(seller_id=seller_id)
-        return queryse
+        return queryset  # Fixed typo: queryse -> queryset

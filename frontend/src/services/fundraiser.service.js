@@ -70,6 +70,15 @@ const FundraiserService = {
       throw error;
     }
   },
+  
+  getMyFundraisers: async () => {
+    try {
+      const response = await api.get('fundraisers/my_fundraisers/');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 

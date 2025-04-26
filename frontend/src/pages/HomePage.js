@@ -37,7 +37,7 @@ const HomePage = () => {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('/images/military-vehicle-hero.jpg')",
+            backgroundImage: "url('/static/images/military-vehicle-hero.jpg')",
             backgroundBlendMode: "overlay",
             backgroundColor: "rgba(49, 46, 129, 0.7)"
           }}
@@ -74,7 +74,7 @@ const HomePage = () => {
           </div>
           <div className="md:w-1/2">
             <img
-              src="/images/military-humvee.jpg"
+              src="/static/images/military-humvee.jpg"
               alt="Military Humvee"
               className="rounded-lg shadow-xl"
             />
@@ -138,7 +138,7 @@ const HomePage = () => {
                       />
                     ) : (
                       <img
-                        src="/images/car-placeholder.jpg"
+                        src="/static/images/car-placeholder.jpg"
                         alt="Car placeholder"
                         className="w-full h-full object-cover"
                       />

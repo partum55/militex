@@ -1,8 +1,16 @@
+"""
+Django settings for militex project.
+"""
+
 import os
 import dj_database_url
 from pathlib import Path
 from datetime import timedelta
 from django.core.management.utils import get_random_secret_key
+import mimetypes
+
+mimetypes.add_type("text/javascript", ".js", True)
+mimetypes.add_type("text/css", ".css", True)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,9 +62,7 @@ ROOT_URLCONF = 'militex.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(BASE_DIR, 'staticfiles', 'react'),
-        ],
+        'DIRS': [ BASE_DIR / 'frontend_build' ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -74,10 +80,10 @@ WSGI_APPLICATION = 'militex.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3'),
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 # Password validation
@@ -112,18 +118,21 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
 
-# Static files (CSS, JavaScript, Images)
+# Static files configuration
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'staticfiles', 'react'),
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'frontend_build', 'static'),  # Point directly to frontend static folder
 ]
 
-# Simplified static file serving
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Make sure WhiteNoise can find the files
+WHITENOISE_ROOT = os.path.join(BASE_DIR, 'frontend_build')
 
-# Media files
+# Change to standard WhiteNoise storage since custom one might have issues
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+# Media files (User uploaded files)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

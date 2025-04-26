@@ -13,3 +13,34 @@ services:
       - DATABASE_URL=sqlite:///db.sqlite3
       - SECRET_KEY=cronenburg-123890
     command: sh -c "cd backend && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.idea/
+
+# Django stuff
+db.sqlite3
+backend/staticfiles/
+*/migrations/
+
+# Node/React
+frontend/node_modules/
+frontend/build/
+
+# Environment and secrets
+.env
+*.env
+
+# Git
+.git/
+.gitignore
+
+# Editor/temp files
+.vscode/
+.DS_Store
+
+# Docker compose files (if present)
+docker-compose*.yml
+docker-compose*.yaml

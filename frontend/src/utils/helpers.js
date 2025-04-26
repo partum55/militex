@@ -20,24 +20,20 @@ export const getImageUrl = (imagePath, fallbackImage = '/images/placeholder.jpg'
     return imagePath;
   }
   
-  // If the image path starts with /media, it's a Django media file
+  // Get base URL from environment or use current domain
+  const baseUrl = process.env.REACT_APP_API_BASE_URL || '';
+  
+  // If the image path starts with /media, append it to the base URL
   if (imagePath.startsWith('/media/')) {
-    return imagePath;
+    return `${baseUrl}${imagePath}`;
   }
 
-  // If the image path starts with a slash, it's a relative path from the root
-  if (imagePath.startsWith('/')) {
-    return imagePath;
+  // If the path is relative, make it absolute
+  if (!imagePath.startsWith('/')) {
+    return `${baseUrl}/media/${imagePath}`;
   }
-
-  // For Django media URLs that don't start with /media
-  if (imagePath.includes('car_images/') || imagePath.includes('fundraiser_images/')) {
-    return `/media/${imagePath}`;
-  }
-
-  // Otherwise, prepend the API URL
-  const API_URL = '/api/';
-  return `${API_URL}${imagePath}`;
+  
+  return `${baseUrl}${imagePath}`;
 };
 
 /**

@@ -78,9 +78,10 @@ class Car(models.Model):
 
 
 class CarImage(models.Model):
-    car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='images')
+    car = models.ForeignKey(Car, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='car_images/')
     is_primary = models.BooleanField(default=False)
-
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
     def __str__(self):
-        return f"Image for {self.car}"
+        return f"Image for {self.car} ({self.id})"
