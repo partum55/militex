@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'cronenburg-123890')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost']
 
@@ -198,8 +198,22 @@ CORS_ALLOW_HEADERS = [
 
 # Security settings for production
 if not DEBUG:
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
-    SESSION_COOKIE_SECURE = True
+    # Disable forced SSL redirect to prevent redirect loops
+    SECURE_SSL_REDIRECT = False
+    
+    # Make sure cookie settings are compatible with both HTTP and HTTPS
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    
+    # Add correct trusted origins for CSRF
+    CSRF_TRUSTED_ORIGINS = [
+        'https://militex.koyeb.app', 
+        'http://militex.koyeb.app',
+        'https://*.koyeb.app', 
+        'http://*.koyeb.app'
+    ]
+    
+    # Other security settings can remain unchanged
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_SECONDS = 31536000  # 1 year

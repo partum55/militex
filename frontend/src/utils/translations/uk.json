@@ -52,14 +52,14 @@
   },
   "cars": {
     "mileage": "км",
-    "carMake": "Марка авто",
-    "carModel": "Модель авто",
-    "year": "Рік виробництва",
+    "carMake": "Марка",
+    "carModel": "Модель",
+    "year": "Рік",
     "yearRange": "Діапазон років",
-    "vehicleType": "Тип автомобіля",
+    "vehicleType": "Тип транспорту",
     "condition": "Стан",
     "fuelType": "Тип палива",
-    "transmission": "Трансмісія",
+    "transmission": "Коробка передач",
     "bodyType": "Тип кузова",
     "country": "Країна",
     "city": "Місто/Регіон",
@@ -68,7 +68,7 @@
     "mileageRange": "Діапазон пробігу",
     "negotiable": "Договірна ціна",
     "engineSize": "Об'єм двигуна",
-    "enginePower": "Потужність двигуна",
+    "enginePower": "Потужність двигуна (к.с.)",
     "description": "Опис",
     "sellCar": "Продати автомобіль",
     "editVehicle": "Редагувати автомобіль",
@@ -127,7 +127,8 @@
     "dragPhoto": "Перетягніть сюди фото автомобіля",
     "similarVehicles": "Схожі автомобілі",
     "noSimilarVehicles": "Схожих автомобілів не знайдено",
-    "browseAllVehicles": "Переглянути всі автомобілі"
+    "browseAllVehicles": "Переглянути всі автомобілі",
+    "noFeaturedCarsAvailable": "Немає рекомендованих автомобілів"
   },
   "forms": {
     "fillAllFields": "Будь ласка, заповніть всі обов'язкові поля",

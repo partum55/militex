@@ -26,12 +26,31 @@ class IsAdminUser(permissions.BasePermission):
 class CarViewSet(viewsets.ModelViewSet):
     queryset = Car.objects.all()
     serializer_class = CarSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = CarFilter
     search_fields = ['make', 'model', 'description']
     ordering_fields = ['price', 'year', 'mileage', 'created_at']
     ordering = ['-created_at']
+    
+    def get_permissions(self):
+        """
+        Override get_permissions to customize permissions per action:
+        - Allow anyone to list and retrieve cars
+        - Require authentication for create, update, delete
+        """
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [permissions.AllowAny]
+        elif self.action in ['create', 'update', 'partial_update', 'destroy', 'my_listings', 
+                           'add_images', 'delete_image', 'set_primary_image']:
+            permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+        elif self.action == 'import_from_autoria':
+            permission_classes = [IsAdminUser]
+        else:
+            # Also allow anyone to access these basic actions
+            permission_classes = [permissions.AllowAny]
+            
+        return [permission() for permission in permission_classes]
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):

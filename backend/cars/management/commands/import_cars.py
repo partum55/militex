@@ -1,10 +1,18 @@
 import os
+import sqlite3
+import re
 from django.core.management.base import BaseCommand
 from django.core.files.base import ContentFile
 from django.conf import settings
+from django.db import transaction
 import requests
+from bs4 import BeautifulSoup
 import tempfile
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 from cars.parser_integration import import_cars_sync
+from cars.models import Car, CarImage
 
 class Command(BaseCommand):
     help = 'Import cars from auto.ria.com'
@@ -22,6 +30,24 @@ class Command(BaseCommand):
             default=1,
             help='User ID to use as the seller (default: 1)'
         )
+
+    def handle(self, *args, **options):
+        """
+        Main command function that's called when the command is run
+        """
+        limit = options['limit']
+        user_id = options['user_id']
+        
+        self.stdout.write(f"Starting import of {limit} cars...")
+        
+        try:
+            # Use the improved import_cars_sync function
+            count = import_cars_sync(limit=limit, admin_user_id=user_id)
+            self.stdout.write(self.style.SUCCESS(f"Successfully imported {count} cars"))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"Error during import: {str(e)}"))
+            import traceback
+            self.stdout.write(traceback.format_exc())
 
     def setup_sqlite_db(self, db_path):
         """Setup SQLite database for temporary storage"""

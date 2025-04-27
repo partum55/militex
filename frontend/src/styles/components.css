@@ -166,6 +166,14 @@
     @apply font-medium;
   }
 
+  .image-placeholder {
+    @apply bg-gray-200 flex items-center justify-center;
+  }
+
+  .image-placeholder-text {
+    @apply text-gray-400 text-sm;
+  }
+
   .form-steps {
     @apply mb-8;
   }

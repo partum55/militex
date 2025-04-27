@@ -12,6 +12,9 @@ mimetypes.add_type("text/css", ".css", True)
 
 def serve_file(request):
     """Very simple file server for React app"""
+    # Remove the HTTPS check since we're accepting both HTTP and HTTPS now
+    # This prevents redirect loops when the request uses HTTPS
+    
     # Print the requested path for debugging
     print(f"[DEBUG] Requested path: {request.path}")
 

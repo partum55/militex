@@ -34,7 +34,7 @@ COPY backend/ ./backend
 COPY --from=frontend-build /app/frontend/build/ ./backend/frontend_build/
 
 # collect static assets
-RUN python backend/manage.py collectstatic --noinput
+RUN python backend/manage.py collectstatic --no-input
 
 # expose & run
 EXPOSE 8000

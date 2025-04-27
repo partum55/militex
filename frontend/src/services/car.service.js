@@ -152,6 +152,20 @@ const CarService = {
           ordering: '-created_at',
         },
       });
+      
+      // Debug image data in featured cars
+      if (response.data.results && response.data.results.length > 0) {
+        response.data.results.forEach((car, index) => {
+          console.log(`Featured car ${index + 1} (${car.id}): `, {
+            make: car.make,
+            model: car.model, 
+            hasImages: car.images && car.images.length > 0,
+            imageCount: car.images ? car.images.length : 0,
+            firstImagePath: car.images && car.images.length > 0 ? car.images[0].image : 'no image'
+          });
+        });
+      }
+      
       return response.data.results;
     } catch (error) {
       console.error('Error fetching featured cars:', error);

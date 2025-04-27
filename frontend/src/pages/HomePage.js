@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import CarService from '../services/car.service';
+import { getImagePath, IMAGE_PATHS } from '../utils/imagePaths';
+import OptimizedImage from '../components/common/OptimizedImage';
 
 const HomePage = () => {
   const { t } = useTranslation();
@@ -131,14 +133,15 @@ const HomePage = () => {
                 <div key={car.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                   <div className="h-48 bg-gray-300">
                     {car.images && car.images.length > 0 ? (
-                      <img
-                        src={car.images[0].image}
+                      <OptimizedImage
+                        src={getImagePath(car.images[0].image)}
                         alt={`${car.year} ${car.make} ${car.model}`}
                         className="w-full h-full object-cover"
+                        fallbackSrc={IMAGE_PATHS.CAR_PLACEHOLDER}
                       />
                     ) : (
                       <img
-                        src="/static/images/car-placeholder.jpg"
+                        src={IMAGE_PATHS.CAR_PLACEHOLDER}
                         alt="Car placeholder"
                         className="w-full h-full object-cover"
                       />

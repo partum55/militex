@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getImagePath, IMAGE_PATHS } from '../../utils/imagePaths';
@@ -24,7 +24,8 @@ const OptimizedImage = memo(({ src, alt, className, onError }) => {
       setImageSrc(src);
     };
     img.onerror = () => {
-      setImageSrc(getImagePath(IMAGE_PATHS.CAR_PLACEHOLDER));
+      console.error(`Failed to load image: ${src}`);
+      setImageSrc(IMAGE_PATHS.CAR_PLACEHOLDER);
       setHasError(true);
       if (onError) onError();
     };
@@ -42,7 +43,8 @@ const OptimizedImage = memo(({ src, alt, className, onError }) => {
       alt={alt}
       className={className}
       onError={(e) => {
-        e.currentTarget.src = PLACEHOLDER_IMAGE_DATA;
+        console.error(`Image error for: ${e.currentTarget.src}`);
+        e.currentTarget.src = IMAGE_PATHS.CAR_PLACEHOLDER;
       }}
     />
   );
@@ -50,6 +52,7 @@ const OptimizedImage = memo(({ src, alt, className, onError }) => {
 
 const CarCard = ({ car }) => {
   const { t } = useTranslation();
+  const [imageError, setImageError] = useState(false);
 
   if (!car || !car.id) {
     return (
@@ -65,7 +68,12 @@ const CarCard = ({ car }) => {
       const imagePath = primaryImage ? primaryImage.image : car.images[0].image;
       return getImagePath(imagePath);
     }
-    return getImagePath(IMAGE_PATHS.CAR_PLACEHOLDER);
+    return IMAGE_PATHS.CAR_PLACEHOLDER;
+  };
+
+  const handleImageError = () => {
+    console.log(`Image error for car: ${car.id}`);
+    setImageError(true);
   };
 
   const priceFormatted = typeof car.price === 'number'
@@ -79,12 +87,13 @@ const CarCard = ({ car }) => {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg">
       <Link to={`/cars/${car.id}`} className="flex flex-col md:flex-row">
-        {/* Car Image - Using the optimized image component */}
+        {/* Car Image */}
         <div className="md:w-1/3">
           <OptimizedImage
-            src={getPrimaryImageUrl()}
+            src={imageError ? IMAGE_PATHS.CAR_PLACEHOLDER : getPrimaryImageUrl()}
             alt={`${car.year} ${car.make} ${car.model}`}
             className="w-full h-48 md:h-full object-cover"
+            onError={handleImageError}
           />
         </div>
 
