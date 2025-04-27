@@ -3,15 +3,15 @@ import { useTranslation } from 'react-i18next';
 
 const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
   const { t } = useTranslation();
-  
+
   const validateStep = () => {
     // Required fields for this step
-    const required = ['make', 'model', 'year', 'mileage', 'vehicle_type', 
+    const required = ['make', 'model', 'year', 'mileage', 'vehicle_type',
                      'condition', 'fuel_type', 'transmission'];
-    
+
     return required.every(field => formData[field]);
   };
-  
+
   const handleNext = (e) => {
     e.preventDefault();
     if (validateStep()) {
@@ -20,15 +20,15 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
       alert(t('forms.fillAllFields'));
     }
   };
-  
+
   return (
-    <form onSubmit={handleNext}>
+    <form onSubmit={handleNext} className="px-2">
       <h2 className="text-xl font-semibold text-indigo-900 mb-4">{t('cars.vehicleDetails')}</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
         {/* Make */}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="make">
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm md:text-base" htmlFor="make">
             {t('cars.carMake')} *
           </label>
           <input
@@ -37,14 +37,14 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             name="make"
             value={formData.make}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
             required
           />
         </div>
-        
+
         {/* Model */}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="model">
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm md:text-base" htmlFor="model">
             {t('cars.carModel')} *
           </label>
           <input
@@ -53,14 +53,14 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             name="model"
             value={formData.model}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
             required
           />
         </div>
-        
+
         {/* Year */}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="year">
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm md:text-base" htmlFor="year">
             {t('cars.year')} *
           </label>
           <input
@@ -71,14 +71,14 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             onChange={handleInputChange}
             min="1900"
             max={new Date().getFullYear()}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
             required
           />
         </div>
-        
+
         {/* Mileage */}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="mileage">
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm md:text-base" htmlFor="mileage">
             {t('cars.mileage')} *
           </label>
           <input
@@ -88,14 +88,14 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             value={formData.mileage}
             onChange={handleInputChange}
             min="0"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
             required
           />
         </div>
-        
+
         {/* Vehicle Type */}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="vehicle_type">
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm md:text-base" htmlFor="vehicle_type">
             {t('cars.vehicleType')} *
           </label>
           <select
@@ -103,7 +103,7 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             name="vehicle_type"
             value={formData.vehicle_type}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base bg-white"
             required
           >
             <option value="">{t('forms.select')}</option>
@@ -115,10 +115,10 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             <option value="motorcycle">Motorcycle</option>
           </select>
         </div>
-        
+
         {/* Condition */}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="condition">
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm md:text-base" htmlFor="condition">
             {t('cars.condition')} *
           </label>
           <select
@@ -126,7 +126,7 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             name="condition"
             value={formData.condition}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base bg-white"
             required
           >
             <option value="">{t('forms.select')}</option>
@@ -135,10 +135,10 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             <option value="damaged">Damaged</option>
           </select>
         </div>
-        
+
         {/* Fuel Type */}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="fuel_type">
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm md:text-base" htmlFor="fuel_type">
             {t('cars.fuelType')} *
           </label>
           <select
@@ -146,7 +146,7 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             name="fuel_type"
             value={formData.fuel_type}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base bg-white"
             required
           >
             <option value="">{t('forms.select')}</option>
@@ -157,10 +157,10 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             <option value="hybrid">Hybrid</option>
           </select>
         </div>
-        
+
         {/* Transmission */}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="transmission">
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm md:text-base" htmlFor="transmission">
             {t('cars.transmission')} *
           </label>
           <select
@@ -168,7 +168,7 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             name="transmission"
             value={formData.transmission}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base bg-white"
             required
           >
             <option value="">{t('forms.select')}</option>
@@ -177,10 +177,10 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             <option value="semi-automatic">Semi-Automatic</option>
           </select>
         </div>
-        
+
         {/* Body Type */}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="body_type">
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm md:text-base" htmlFor="body_type">
             {t('cars.bodyType')}
           </label>
           <select
@@ -188,7 +188,7 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             name="body_type"
             value={formData.body_type}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base bg-white"
           >
             <option value="">{t('forms.select')}</option>
             <option value="sedan">Sedan</option>
@@ -202,10 +202,10 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             <option value="hardtop">Hardtop</option>
           </select>
         </div>
-        
+
         {/* Engine Size */}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="engine_size">
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm md:text-base" htmlFor="engine_size">
             {t('cars.engineSize')}
           </label>
           <input
@@ -216,13 +216,13 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             onChange={handleInputChange}
             min="0"
             step="0.1"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
           />
         </div>
-        
+
         {/* Engine Power */}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="engine_power">
+        <div>
+          <label className="block text-gray-700 mb-1 text-sm md:text-base" htmlFor="engine_power">
             {t('cars.enginePower')}
           </label>
           <input
@@ -232,15 +232,15 @@ const VehicleDetailsStep = ({ formData, handleInputChange, nextStep }) => {
             value={formData.engine_power}
             onChange={handleInputChange}
             min="0"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
           />
         </div>
       </div>
-      
+
       <div className="flex justify-end mt-6">
         <button
           type="submit"
-          className="bg-indigo-900 text-white px-6 py-2 rounded-lg hover:bg-indigo-800 transition duration-200"
+          className="bg-indigo-900 text-white px-4 py-2 rounded-lg hover:bg-indigo-800 transition duration-200 text-sm md:text-base"
         >
           {t('common.next')} →
         </button>

@@ -5,6 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import CarService from '../../services/car.service';
 import { createFilePreview, revokeFilePreview } from '../../utils/helpers';
 
+// Step components
 import VehicleDetailsStep from './sell-steps/VehicleDetailsStep';
 import LocationPriceStep from './sell-steps/LocationPriceStep';
 import ConfirmationStep from './sell-steps/ConfirmationStep';
@@ -13,6 +14,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  // Form data state with default values or initial data if editing
   const [formData, setFormData] = useState({
     make: initialData?.make || '',
     model: initialData?.model || '',
@@ -32,15 +34,18 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
     description: initialData?.description || '',
     uploaded_images: [],
     existing_images: initialData?.images || [],
-    images_to_delete: []
+    images_to_delete: [] // Track IDs of images to delete during update
   });
 
+  // UI state
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  // File upload handling
   const onDrop = useCallback((acceptedFiles) => {
+    // Create proper File objects with previews
     const filesWithPreviews = acceptedFiles.map(file =>
       Object.assign(file, {
         preview: createFilePreview(file)
@@ -66,6 +71,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
     maxSize: 5242880, // 5MB
   });
 
+  // Clean up previews on unmount
   useEffect(() => {
     return () => {
       formData.uploaded_images.forEach(file => {
@@ -81,6 +87,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
       const newImages = [...prevData.uploaded_images];
       const removed = newImages.splice(index, 1)[0];
 
+      // Revoke the object URL to avoid memory leaks
       if (removed.preview) {
         revokeFilePreview(removed.preview);
       }
@@ -97,6 +104,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
       const newImages = [...prevData.existing_images];
       const removedImage = newImages.splice(index, 1)[0];
 
+      // If the image has an ID, add it to the list of images to delete
       const imagesToDelete = [...prevData.images_to_delete];
       if (removedImage && removedImage.id) {
         imagesToDelete.push(removedImage.id);
@@ -110,6 +118,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
     });
   };
 
+  // Form handling
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prevData => ({
@@ -129,6 +138,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
   };
 
   const validateForm = () => {
+    // Base required fields
     const requiredFields = [
       'make', 'model', 'year', 'mileage', 'vehicle_type',
       'condition', 'fuel_type', 'transmission', 'country',
@@ -142,6 +152,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
       return false;
     }
 
+    // Validate numeric fields
     if (isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) {
       setError('Please enter a valid price');
       return false;
@@ -157,11 +168,13 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
       return false;
     }
 
+    // Validate that there's at least one image when creating a new car
     if (!isEditing && formData.uploaded_images.length === 0) {
       setError('Please upload at least one image of your vehicle');
       return false;
     }
 
+    // When editing, ensure there's at least one image remaining
     if (isEditing && formData.existing_images.length === 0 && formData.uploaded_images.length === 0) {
       setError('Please keep at least one image or upload a new one');
       return false;
@@ -170,6 +183,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
     return true;
   };
 
+  // Helper function to debug FormData
   const debugFormData = (formData) => {
     console.log('--- FormData Debug Start ---');
     for (let pair of formData.entries()) {
@@ -195,8 +209,12 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
     setError('');
 
     try {
+      // Prepare data for submission
       const formDataToSubmit = new FormData();
+
+      // Add simple fields
       Object.entries(formData).forEach(([key, value]) => {
+        // Skip special fields that need special handling
         if (
           key !== 'uploaded_images' &&
           key !== 'existing_images' &&
@@ -206,25 +224,32 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
           formDataToSubmit.append(key, value);
         }
       });
+
+      // Add uploaded images
       formData.uploaded_images.forEach((image) => {
         formDataToSubmit.append('uploaded_images', image);
       });
 
+      // Add image IDs to delete when editing
       if (isEditing && formData.images_to_delete.length > 0) {
         formDataToSubmit.append('images_to_delete', JSON.stringify(formData.images_to_delete));
       }
 
+      // Debug what's being sent
       console.log(`Submitting form with ${formData.uploaded_images.length} new images and ${formData.images_to_delete.length} images to delete`);
       debugFormData(formDataToSubmit);
 
       if (isEditing && carId) {
+        // For editing, we'll need to handle existing images differently
         await CarService.updateCar(carId, formDataToSubmit);
       } else {
+        // For creating new
         await CarService.createCar(formDataToSubmit);
       }
 
       setSuccess(true);
 
+      // Clean up previews
       formData.uploaded_images.forEach(file => {
         if (file.preview) {
           revokeFilePreview(file.preview);
@@ -234,6 +259,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
       if (onSuccess) {
         onSuccess();
       } else {
+        // Redirect after a delay
         setTimeout(() => {
           navigate('/profile');
         }, 2000);
@@ -242,6 +268,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
       console.error('Submission error:', error);
       let errorMessage = 'Failed to submit. Please check your information and try again.';
 
+      // Try to extract more detailed error messages
       if (error.response?.data) {
         if (typeof error.response.data === 'string') {
           errorMessage = error.response.data;
@@ -259,6 +286,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
     }
   };
 
+  // Render appropriate step
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -317,7 +345,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
+    <div className="w-full max-w-3xl mx-auto bg-white rounded-lg shadow-md p-4 md:p-6">
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
@@ -325,7 +353,7 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
       )}
 
       {/* Progress indicator */}
-      <div className="mb-8">
+      <div className="mb-6 px-2">
         <div className="flex items-center">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
             currentStep >= 1 ? 'bg-indigo-900 text-white' : 'bg-gray-300 text-gray-600'
@@ -348,6 +376,15 @@ const SellCarForm = ({ initialData, isEditing = false, carId, onSuccess }) => {
           }`}>
             3
           </div>
+        </div>
+
+        {/* Step labels - only visible on larger screens */}
+        <div className="hidden md:flex justify-between mt-2 text-xs text-gray-500">
+          <span className="w-8 text-center">{t('cars.vehicleDetails')}</span>
+          <span className="flex-1"></span>
+          <span className="w-8 text-center">{t('cars.locationPriceDetails')}</span>
+          <span className="flex-1"></span>
+          <span className="w-8 text-center">{t('cars.allRight')}</span>
         </div>
       </div>
 
