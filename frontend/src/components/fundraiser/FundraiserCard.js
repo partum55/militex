@@ -4,10 +4,19 @@ import { useTranslation } from 'react-i18next';
 const FundraiserCard = ({ fundraiser, onDonate }) => {
   const { t } = useTranslation();
 
+  // Format currency display
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col transition hover:shadow-lg">
       {/* Fundraiser Image */}
-      <div className="h-48 bg-gray-200">
+      <div className="h-40 sm:h-48 bg-gray-200 relative">
         {fundraiser.image ? (
           <img
             src={fundraiser.image}
@@ -16,16 +25,21 @@ const FundraiserCard = ({ fundraiser, onDonate }) => {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-indigo-100">
-            <span className="text-indigo-300 text-4xl font-bold">MILITEX</span>
+            <span className="text-indigo-300 text-3xl font-bold">MILITEX</span>
           </div>
         )}
+        {/* Progress Indicator Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 sm:p-2 flex justify-between">
+          <span className="font-medium">{fundraiser.progress_percentage}%</span>
+          <span>{formatCurrency(fundraiser.current_amount)} / {formatCurrency(fundraiser.target_amount)}</span>
+        </div>
       </div>
 
       {/* Fundraiser Content */}
-      <div className="p-6">
-        <h3 className="text-xl font-bold text-indigo-900 mb-2">{fundraiser.title}</h3>
+      <div className="p-4 flex-grow flex flex-col">
+        <h3 className="text-lg font-bold text-indigo-900 mb-2 line-clamp-2">{fundraiser.title}</h3>
 
-        <div className="flex items-center text-sm text-gray-500 mb-4">
+        <div className="flex items-center text-xs text-gray-500 mb-3">
           <span>
             {t('fundraiser.by')} {fundraiser.created_by_username}
           </span>
@@ -36,32 +50,24 @@ const FundraiserCard = ({ fundraiser, onDonate }) => {
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-4">
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div className="mb-3">
+          <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-indigo-900 h-2.5 rounded-full"
+              className="bg-indigo-900 h-2 rounded-full"
               style={{ width: `${fundraiser.progress_percentage}%` }}
             ></div>
-          </div>
-          <div className="flex justify-between mt-2 text-sm">
-            <span className="font-medium">
-              ${fundraiser.current_amount.toLocaleString()}
-            </span>
-            <span className="text-gray-500">
-              {t('fundraiser.goalOf')} ${fundraiser.target_amount.toLocaleString()}
-            </span>
           </div>
         </div>
 
         {/* Description (truncated) */}
-        <p className="text-gray-600 mb-6 line-clamp-3">
+        <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
           {fundraiser.description}
         </p>
 
         {/* Donate Button */}
         <button
-          onClick={onDonate}
-          className="w-full bg-indigo-900 text-white py-3 rounded-lg hover:bg-indigo-800 transition duration-200"
+          onClick={() => onDonate(fundraiser)}
+          className="w-full bg-indigo-900 text-white py-2 rounded-lg hover:bg-indigo-800 transition duration-200 text-sm"
         >
           {t('fundraiser.donate')}
         </button>

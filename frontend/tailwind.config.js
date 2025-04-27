@@ -8,6 +8,7 @@ export default {
     extend: {
       colors: {
         indigo: {
+          950: '#1e1b4b',
           900: '#312e81',
           800: '#3730a3',
           700: '#4338ca',
@@ -19,6 +20,46 @@ export default {
           100: '#e0e7ff',
           50: '#eef2ff',
         }
+      },
+      animation: {
+        'fadeIn': 'fadeIn 0.2s ease-in-out',
+        'slideDown': 'slideDown 0.2s ease-in-out',
+        'slideUp': 'slideUp 0.2s ease-in-out'
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        }
+      },
+      screens: {
+        'xs': '475px',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '72': '18rem',
+        '84': '21rem',
+        '96': '24rem',
+      },
+      height: {
+        'screen-90': '90vh',
+      },
+      minHeight: {
+        '16': '4rem',
+      },
+      zIndex: {
+        '60': '60',
+        '70': '70',
+        '80': '80',
+        '90': '90',
       }
     },
   },
