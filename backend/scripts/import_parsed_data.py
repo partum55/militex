@@ -18,14 +18,12 @@ def run():
         
         # Check if we already have cars
         existing_count = Car.objects.count()
-        if existing_count > 0:
-            print(f"Database already contains {existing_count} cars. Skipping deletion.")
-        else:
-            print("Database is empty. Preparing for initial import.")
-            # Only delete if empty (which it already is)
-            CarImage.objects.all().delete()
-            Car.objects.all().delete()
-            print("Ensuring database is clean for import.")
+
+        print("Database is empty. Preparing for initial import.")
+        # Only delete (which it already is)
+        CarImage.objects.all().delete()
+        Car.objects.all().delete()
+        print("Ensuring database is clean for import.")
 
         User = get_user_model()
         admin_user, created = User.objects.get_or_create(
@@ -44,7 +42,7 @@ def run():
             print("Using existing admin user for import")
 
         print("Importing from Auto.ria...")
-        count = import_cars_sync(100, admin_user_id=admin_user.id)
+        count = import_cars_sync(30, admin_user_id=admin_user.id)
         print(f"Imported {count} cars from Auto.ria")
         
         total_count = Car.objects.count()
@@ -53,7 +51,9 @@ def run():
         print(f"Total car images in database: {total_images}")
         
         print("Data import completed!")
-        
+
+        print("✔ CRON Import script executed successfully at:", datetime.datetime.now())
+
         # Mark as complete in the flag file
         with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.car_import_done'), 'w') as f:
             f.write(datetime.date.today().isoformat())

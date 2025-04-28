@@ -1,0 +1,1 @@
+*/2 * * * * cd /app/backend && python scripts/import_parsed_data.py >> /var/log/cron_import.log 2>&1
