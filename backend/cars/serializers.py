@@ -19,7 +19,7 @@ class CarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Car
-        fields = ['id', 'make', 'model', 'year', 'price', 'mileage', 'description', 'seller', 'created_at', 'images', 'image_files']
+        fields = ['id', 'make', 'model', 'year', 'price', 'mileage', 'description', 'seller', 'created_at', 'images', 'image_files', 'fuel_type', 'transmission', 'body_type', 'condition', 'city', 'vehicle_type', 'country', 'negotiable', 'engine_size', 'engine_power']
         read_only_fields = ['id', 'seller', 'created_at']
 
     def create(self, validated_data):
