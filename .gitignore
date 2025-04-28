@@ -7,4 +7,4 @@ db.sqlite3
 build/
 node_modules/
 staticfiles/
-frontend_build/
+
