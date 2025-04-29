@@ -1,0 +1,1 @@
+web: gunicorn militex.wsgi:application --chdir backend --bind 0.0.0.0:$PORT
