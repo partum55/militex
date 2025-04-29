@@ -42,7 +42,7 @@ def run():
             print("Using existing admin user for import")
 
         print("Importing from Auto.ria...")
-        count = import_cars_sync(30, admin_user_id=admin_user.id)
+        count = import_cars_sync(50, admin_user_id=admin_user.id)
         print(f"Imported {count} cars from Auto.ria")
         
         total_count = Car.objects.count()
