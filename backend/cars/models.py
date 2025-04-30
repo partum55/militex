@@ -1,7 +1,20 @@
+# backend/cars/models.py
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+from djongo.models import ObjectIdField, ArrayField, EmbeddedField
 
+class CarImage(models.Model):
+    _id = ObjectIdField()
+    image_path = models.CharField(max_length=255)
+    is_primary = models.BooleanField(default=False)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        abstract = True
+    
+    def __str__(self):
+        return f"Image {self._id}"
 
 class Car(models.Model):
     CONDITION_CHOICES = (
@@ -36,7 +49,13 @@ class Car(models.Model):
         ('semi-automatic', _('Semi-Automatic')),
     )
 
-    seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cars')
+    # MongoDB specific field
+    _id = ObjectIdField()
+    
+    # User reference (stored as string ID to work across databases)
+    seller_id = models.CharField(max_length=100)
+    seller_username = models.CharField(max_length=150)
+    
     make = models.CharField(_('Make'), max_length=100)
     model = models.CharField(_('Model'), max_length=100)
     year = models.PositiveIntegerField(_('Year of Manufacture'))
@@ -67,6 +86,12 @@ class Car(models.Model):
     # Original listing data
     original_url = models.URLField(_('Original URL'), blank=True, null=True)
     is_imported = models.BooleanField(_('Is Imported'), default=False)
+    
+    # Images stored as embedded documents in MongoDB
+    images = ArrayField(
+        model_container=CarImage,
+        blank=True
+    )
 
     def __str__(self):
         return f"{self.year} {self.make} {self.model}"
@@ -75,13 +100,3 @@ class Car(models.Model):
         ordering = ['-created_at']
         verbose_name = _('Car')
         verbose_name_plural = _('Cars')
-
-
-class CarImage(models.Model):
-    car = models.ForeignKey(Car, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='car_images/')
-    is_primary = models.BooleanField(default=False)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"Image for {self.car} ({self.id})"

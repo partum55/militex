@@ -35,6 +35,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend code
 COPY backend/ ./backend
 
+# Create media directories for MongoDB file storage
+RUN mkdir -p backend/media/car_images
+
 # Install the cronjob
 RUN echo "" >> backend/cronjob && crontab backend/cronjob
 

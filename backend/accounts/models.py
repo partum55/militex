@@ -1,9 +1,13 @@
+# backend/accounts/models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
-
+from djongo.models import ObjectIdField
 
 class User(AbstractUser):
+    # Add MongoDB specific field
+    _id = ObjectIdField()
+    
     phone_number = models.CharField(_('Phone Number'), max_length=20, blank=True)
     is_military = models.BooleanField(_('Military Status'), default=False)
 
@@ -16,6 +20,9 @@ class User(AbstractUser):
 
 
 class SellerRating(models.Model):
+    # Add MongoDB specific field
+    _id = ObjectIdField()
+    
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ratings')
     rater = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_ratings')
     rating = models.PositiveSmallIntegerField(choices=[(i, i) for i in range(1, 6)])

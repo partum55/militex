@@ -447,21 +447,20 @@ async def import_cars_from_autoria(limit=100, admin_user_id=1):
         # Create new car
         image_urls = car_data.pop("image_urls", [])
         source_url = car_data.pop("source_url", "")
-        car = await sync_to_async(Car.objects.create)(
+        car = await sync_to_async(lambda: Car.objects.using('cars_db').create(
             seller=user,
             **car_data
-        )
-        
+        ))()
         # Download and create car images
         for i, img_url in enumerate(image_urls):
             try:
                 image_file = await download_image(img_url)
                 if image_file:
-                    await sync_to_async(CarImage.objects.create)(
+                    await sync_to_async(lambda: CarImage.objects.using('cars_db').create(
                         car=car,
                         image=image_file,
                         is_primary=(i == 0)
-                    )
+                    ))()
             except Exception as e:
                 print(f"Error saving image {img_url}: {e}")
         
@@ -471,14 +470,24 @@ async def import_cars_from_autoria(limit=100, admin_user_id=1):
     return imported_count
 
 def import_cars_sync(limit=100, admin_user_id=1):
-    """Synchronous wrapper for import_cars_from_autoria"""
+    """Synchronous wrapper for import_cars_from_autoria modified for MongoDB"""
     print(f"Starting import_cars_sync with limit={limit}, admin_user_id={admin_user_id}")
     try:
         # Check if admin user exists
         from django.contrib.auth import get_user_model
         User = get_user_model()
+        
         try:
-            admin_user = User.objects.get(id=admin_user_id)
+            # Convert string ID to ObjectId if needed
+            if not isinstance(admin_user_id, ObjectId) and isinstance(admin_user_id, str):
+                try:
+                    obj_id = ObjectId(admin_user_id)
+                    admin_user = User.objects.get(_id=obj_id)
+                except:
+                    admin_user = User.objects.get(id=admin_user_id)
+            else:
+                admin_user = User.objects.get(id=admin_user_id)
+            
             print(f"Using admin user: {admin_user.username} (ID: {admin_user.id})")
         except User.DoesNotExist:
             print(f"Admin user with ID {admin_user_id} not found, creating default admin")
@@ -502,14 +511,86 @@ def import_cars_sync(limit=100, admin_user_id=1):
                 return 0
             print(f"Will import up to {limit} more cars")
         
-        import asyncio
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(import_cars_from_autoria(limit, admin_user_id))
-        return result
+        # Get the car links
+        links = get_suv_links(limit=limit)
+        imported_count = 0
+        
+        # Process each car
+        for link in links:
+            car_data = parse_car_details(link)
+            if not car_data:
+                continue
+                
+            # Check if car with same make, model and year already exists
+            existing_car = Car.objects.filter(
+                make=car_data["make"],
+                model=car_data["model"],
+                year=car_data["year"],
+                mileage=car_data["mileage"]
+            ).first()
+            
+            if existing_car:
+                print(f"[SKIP] Car already exists: {car_data['make']} {car_data['model']} ({car_data['year']})")
+                continue
+            
+            # Extract image URLs and source URL
+            image_urls = car_data.pop("image_urls", [])
+            source_url = car_data.pop("source_url", "")
+            
+            # Set seller info for MongoDB
+            car_data["seller_id"] = str(admin_user.id) 
+            car_data["seller_username"] = admin_user.username
+            
+            # Create car document with empty images array
+            car_data["images"] = []
+            
+            # Create car in MongoDB
+            car = Car.objects.create(**car_data)
+            
+            # Process and download images
+            images = []
+            for i, img_url in enumerate(image_urls):
+                try:
+                    # Download image
+                    response = requests.get(img_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+                    response.raise_for_status()
+                    
+                    # Generate filename and path
+                    filename = f"{str(ObjectId())}_{os.path.basename(img_url)}"
+                    if '.' not in filename:
+                        filename += '.jpg'  # Add extension if missing
+                        
+                    image_path = f"car_images/{filename}"
+                    
+                    # Save file to disk
+                    save_path = os.path.join(settings.MEDIA_ROOT, 'car_images')
+                    os.makedirs(save_path, exist_ok=True)
+                    
+                    full_path = os.path.join(save_path, filename)
+                    with open(full_path, 'wb') as f:
+                        f.write(response.content)
+                    
+                    # Add to images array
+                    images.append({
+                        '_id': ObjectId(),
+                        'image_path': image_path,
+                        'is_primary': i == 0,  # First image is primary
+                        'uploaded_at': datetime.now(),
+                    })
+                    
+                except Exception as e:
+                    print(f"Error saving image {img_url}: {e}")
+            
+            # Update car with images
+            if images:
+                car.images = images
+                car.save()
+            
+            imported_count += 1
+            print(f"[✓] Imported: {car_data['make']} {car_data['model']} ({car_data['year']}) | ${car_data['price']}")
+        
+        return imported_count
+        
     except Exception as e:
         print(f"Error during import: {e}")
         import traceback

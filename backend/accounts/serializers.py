@@ -1,3 +1,4 @@
+# backend/accounts/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import SellerRating
@@ -6,6 +7,7 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
     password = serializers.CharField(write_only=True)
 
     class Meta:
@@ -13,6 +15,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name',
                   'phone_number', 'is_military', 'password']
         read_only_fields = ['id']
+    
+    def get_id(self, obj):
+        # Return the MongoDB ObjectId as a string
+        return str(obj._id)
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -23,9 +29,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class SellerRatingSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
     rater_username = serializers.ReadOnlyField(source='rater.username')
 
     class Meta:
         model = SellerRating
         fields = ['id', 'seller', 'rater', 'rater_username', 'rating', 'comment', 'created_at']
         read_only_fields = ['rater', 'created_at']
+    
+    def get_id(self, obj):
+        # Return the MongoDB ObjectId as a string
+        return str(obj._id)

@@ -6,24 +6,32 @@ import traceback
 import datetime
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'militex.settings')
-django.setup()  # Це обов'язково ДО імпортів моделей
+django.setup()  # This is required BEFORE importing models
 from cars.models import Car, CarImage
 from cars.parser_integration import import_cars_sync
 
 from django.contrib.auth import get_user_model
-
+from django.db import connections
 def run():
     try:
         print("Starting car data import process...")
         
         # Check if we already have cars
-        existing_count = Car.objects.count()
+        for db in connections:
+            try:
+                connections[db].ensure_connection()
+                print(f"✓ Successfully connected to {db} database.")
+            except Exception as e:
+                print(f"✗ Database connection error ({db}): {e}")
+                return
+        
+        # Check if we already have cars
+        existing_count = Car.objects.using('cars_db').count()
         print(f"Existing cars in database: {existing_count}")
-
         print("Database is empty. Preparing for initial import.")
         # Only delete (which it already is)
-        CarImage.objects.all().delete()
-        Car.objects.all().delete()
+        CarImage.objects.using('cars_db').all().delete()
+        Car.objects.using('cars_db').all().delete()
         print("Ensuring database is clean for import.")
 
         User = get_user_model()

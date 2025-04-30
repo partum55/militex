@@ -1,0 +1,52 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: militex-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin_password
+    networks:
+      - militex-network
+
+  django:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: militex-django
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./backend:/app
+      - static-volume:/app/staticfiles
+      - media-volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_USERNAME=admin
+      - MONGODB_PASSWORD=admin_password
+      - MONGODB_AUTH_SOURCE=admin
+    depends_on:
+      - mongodb
+    networks:
+      - militex-network
+
+volumes:
+  mongodb-data:
+  static-volume:
+  media-volume:
+
+networks:
+  militex-network:
+    driver: bridge
