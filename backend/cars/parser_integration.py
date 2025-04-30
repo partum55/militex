@@ -1,3 +1,5 @@
+from bson.objectid import ObjectId
+from django.conf import settings
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -11,6 +13,7 @@ from django.contrib.auth import get_user_model
 from .models import Car, CarImage
 import random
 import time
+import datetime
 User = get_user_model()
 
 headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
@@ -571,12 +574,11 @@ def import_cars_sync(limit=100, admin_user_id=1):
                         f.write(response.content)
                     
                     # Add to images array
-                    images.append({
-                        '_id': ObjectId(),
-                        'image_path': image_path,
-                        'is_primary': i == 0,  # First image is primary
-                        'uploaded_at': datetime.now(),
-                    })
+                    car_image = CarImage(
+                        image_path=image_path,
+                        is_primary=(i == 0)
+                    )
+                    images.append(car_image)
                     
                 except Exception as e:
                     print(f"Error saving image {img_url}: {e}")
