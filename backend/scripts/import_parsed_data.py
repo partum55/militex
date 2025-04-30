@@ -18,6 +18,7 @@ def run():
         
         # Check if we already have cars
         existing_count = Car.objects.count()
+        print(f"Existing cars in database: {existing_count}")
 
         print("Database is empty. Preparing for initial import.")
         # Only delete (which it already is)
@@ -42,7 +43,7 @@ def run():
             print("Using existing admin user for import")
 
         print("Importing from Auto.ria...")
-        count = import_cars_sync(50, admin_user_id=admin_user.id)
+        count = import_cars_sync(5, admin_user_id=admin_user.id)
         print(f"Imported {count} cars from Auto.ria")
         
         total_count = Car.objects.count()

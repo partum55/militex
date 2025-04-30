@@ -25,6 +25,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     cron \
     supervisor \
+    sqlite3 \
     && apt-get clean
 
 # Install Python dependencies
@@ -35,7 +36,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend
 
 # Install the cronjob
-RUN crontab backend/cronjob
+RUN echo "" >> backend/cronjob && crontab backend/cronjob
 
 # Copy built React frontend
 COPY --from=frontend-build /app/frontend/build/ ./backend/frontend_build/

@@ -107,7 +107,7 @@ def extract_description(soup):
     
     return ""
 
-def extract_image_urls(soup, limit=100):
+def extract_image_urls(soup, limit=10):
     """Extract car image URLs from the page with improved selectors"""
     image_urls = []
     

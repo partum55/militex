@@ -11,7 +11,7 @@ const CarService = {
     }
   },
 
-  importFromAutoria: async (limit = 50) => {
+  importFromAutoria: async (limit = 10) => {
     try {
       const response = await api.post('cars/import_from_autoria/', { limit });
       return response.data;
@@ -144,7 +144,7 @@ const CarService = {
     }
   },
 
-  getFeaturedCars: async (limit = 3) => {
+  getFeaturedCars: async (limit = 10) => {
     try {
       const response = await api.get('cars/', {
         params: {
