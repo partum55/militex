@@ -1,7 +1,7 @@
 """
 Django settings for militex project.
 """
-
+import mongoengine
 import os
 import dj_database_url
 from pathlib import Path
@@ -86,35 +86,53 @@ WSGI_APPLICATION = 'militex.wsgi.application'
 #     }
 # }
 # MongoDB configuration with Koyeb environment variables
+# MongoDB connection settings
+MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017')
+MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', '')
+MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', '')
+MONGODB_AUTH_SOURCE = os.environ.get('MONGODB_AUTH_SOURCE', 'admin')
+
+# Connect to MongoDB databases
+if MONGODB_USERNAME and MONGODB_PASSWORD:
+    # Connect with authentication
+    mongoengine.connect(
+        db='militex_users',
+        host=MONGODB_URI,
+        username=MONGODB_USERNAME,
+        password=MONGODB_PASSWORD,
+        authentication_source=MONGODB_AUTH_SOURCE,
+        alias='default'
+    )
+    
+    mongoengine.connect(
+        db='militex_cars',
+        host=MONGODB_URI,
+        username=MONGODB_USERNAME,
+        password=MONGODB_PASSWORD,
+        authentication_source=MONGODB_AUTH_SOURCE,
+        alias='cars_db'
+    )
+else:
+    # Connect without authentication
+    mongoengine.connect(
+        db='militex_users',
+        host=MONGODB_URI,
+        alias='default'
+    )
+    
+    mongoengine.connect(
+        db='militex_cars',
+        host=MONGODB_URI,
+        alias='cars_db'
+    )
+
+# Keep the original DATABASES setting for Django's admin and authentication
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': os.environ.get('MONGODB_USERS_DB', 'militex_users'),
-        'CLIENT': {
-            'host': os.environ.get('MONGODB_URI', 'mongodb://localhost:27017'),
-            'username': os.environ.get('MONGODB_USERNAME', ''),
-            'password': os.environ.get('MONGODB_PASSWORD', ''),
-            'authSource': os.environ.get('MONGODB_AUTH_SOURCE', 'admin'),
-            'ssl': os.environ.get('MONGODB_SSL', 'False').lower() == 'true',
-            'retryWrites': True,
-        }
-    },
-    'cars_db': {
-        'ENGINE': 'djongo',
-        'NAME': os.environ.get('MONGODB_CARS_DB', 'militex_cars'),
-        'CLIENT': {
-            'host': os.environ.get('MONGODB_URI', 'mongodb://localhost:27017'),
-            'username': os.environ.get('MONGODB_USERNAME', ''),
-            'password': os.environ.get('MONGODB_PASSWORD', ''),
-            'authSource': os.environ.get('MONGODB_AUTH_SOURCE', 'admin'),
-            'ssl': os.environ.get('MONGODB_SSL', 'False').lower() == 'true',
-            'retryWrites': True,
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# Database routing configuration to direct queries to the appropriate database
-DATABASE_ROUTERS = ['militex.database_router.DatabaseRouter']
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {

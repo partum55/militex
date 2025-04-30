@@ -1,39 +1,25 @@
 # scripts/import_parsed_data.py
-
 import os
 import django
 import traceback
 import datetime
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'militex.settings')
-django.setup()  # This is required BEFORE importing models
+django.setup()
+
 from cars.models import Car, CarImage
 from cars.parser_integration import import_cars_sync
-
 from django.contrib.auth import get_user_model
-from django.db import connections
+
 def run():
     try:
         print("Starting car data import process...")
         
-        # Check if we already have cars
-        for db in connections:
-            try:
-                connections[db].ensure_connection()
-                print(f"✓ Successfully connected to {db} database.")
-            except Exception as e:
-                print(f"✗ Database connection error ({db}): {e}")
-                return
+        # Delete existing cars if needed
+        Car.objects().delete()
+        print("Deleted existing cars")
         
-        # Check if we already have cars
-        existing_count = Car.objects.using('cars_db').count()
-        print(f"Existing cars in database: {existing_count}")
-        print("Database is empty. Preparing for initial import.")
-        # Only delete (which it already is)
-        CarImage.objects.using('cars_db').all().delete()
-        Car.objects.using('cars_db').all().delete()
-        print("Ensuring database is clean for import.")
-
+        # Create admin user if needed
         User = get_user_model()
         admin_user, created = User.objects.get_or_create(
             username='admin',
@@ -43,6 +29,7 @@ def run():
                 'is_superuser': True
             }
         )
+        
         if created:
             admin_user.set_password('admin123')
             admin_user.save()
@@ -50,22 +37,17 @@ def run():
         else:
             print("Using existing admin user for import")
 
+        # Run the import process
         print("Importing from Auto.ria...")
         count = import_cars_sync(5, admin_user_id=admin_user.id)
         print(f"Imported {count} cars from Auto.ria")
         
-        total_count = Car.objects.count()
+        # Verify import
+        total_count = Car.objects().count()
         print(f"Total cars in database: {total_count}")
-        total_images = CarImage.objects.count()
-        print(f"Total car images in database: {total_images}")
         
         print("Data import completed!")
-
         print("✔ CRON Import script executed successfully at:", datetime.datetime.now())
-
-        # Mark as complete in the flag file
-        with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.car_import_done'), 'w') as f:
-            f.write(datetime.date.today().isoformat())
             
     except Exception as e:
         print(f"Error during import: {e}")

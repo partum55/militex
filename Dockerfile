@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 
 # Install Python dependencies
+RUN pip install --use-pep517 pymongo==3.12.3
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
