@@ -101,7 +101,7 @@ DATABASES = {
 # MongoDB configuration with MongoDB Atlas
 # MongoDB connection settings
 # In settings.py
-MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb+srv://militex:militex-test-mongo@cluster0.rpfehqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&tlsAllowInvalidCertificates=true')
+MONGODB_URI = os.environ.get('MONGODB_URI', mongodb+srv://militex:militex-test-mongo@cluster0.rpfehqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&ssl=true&tlsAllowInvalidCertificates=true&tlsInsecure=true)
 MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', '')
 MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', '')
 MONGODB_AUTH_SOURCE = os.environ.get('MONGODB_AUTH_SOURCE', 'admin')
@@ -113,24 +113,21 @@ print(f"MongoDB connection info: {MONGODB_URI}, user: {MONGODB_USERNAME}, auth_s
 try:
     print(f"Connecting to MongoDB: {MONGODB_URI}")
     
+    # Connect to militex_users database with simplified parameters
     mongoengine.connect(
-    db='militex_users',
-    host=MONGODB_URI,
-    alias='default',
-    ssl=True,
-    tlsCAFile="/etc/ssl/certs/ca-certificates.crt",  # Point to system CA certificates
-    connectTimeoutMS=30000,
-    socketTimeoutMS=60000,
-    serverSelectionTimeoutMS=30000
+        db='militex_users',
+        host=MONGODB_URI,
+        alias='default',
+        connectTimeoutMS=30000,
+        socketTimeoutMS=60000,
+        serverSelectionTimeoutMS=30000
     )
 
-    # Same for cars_db connection
+    # Connect to militex_cars database with simplified parameters
     mongoengine.connect(
         db='militex_cars',
         host=MONGODB_URI,
         alias='cars_db',
-        ssl=True,
-        tlsCAFile="/etc/ssl/certs/ca-certificates.crt",  # Point to system CA certificates
         connectTimeoutMS=30000,
         socketTimeoutMS=60000,
         serverSelectionTimeoutMS=30000
