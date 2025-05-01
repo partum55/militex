@@ -11,8 +11,9 @@ djangorestframework-simplejwt==5.2.2  # Adjusted for Django 2.1 compatibility
 
 # Database
 mongoengine==0.27.0
-pymongo==3.12.3
+pymongo[srv]==3.12.3  # Add SRV support for MongoDB Atlas
 dnspython==2.3.0
+certifi==2023.11.17  # Required for SSL verification
 
 # Utilities
 dj-database-url==2.1.0  # Downgraded for compatibility

@@ -97,6 +97,7 @@ DATABASES = {
     }
 }
 # MongoDB configuration with Koyeb environment variables
+# MongoDB configuration with MongoDB Atlas
 # MongoDB connection settings
 MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb+srv://militex:militex-test-mongo@cluster0.rpfehqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
 MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', '')
@@ -109,48 +110,28 @@ print(f"MongoDB connection info: {MONGODB_URI}, user: {MONGODB_USERNAME}, auth_s
 # Connect to MongoDB databases
 try:
     print(f"Connecting to MongoDB: {MONGODB_URI}")
-    if MONGODB_USERNAME and MONGODB_PASSWORD:
-        # Connect with authentication
-        print(f"Using authenticated MongoDB connection with user: {MONGODB_USERNAME}")
-        mongoengine.connect(
-            db='militex_users',
-            host=MONGODB_URI,
-            username=MONGODB_USERNAME,
-            password=MONGODB_PASSWORD,
-            authentication_source=MONGODB_AUTH_SOURCE,
-            alias='default',
-            serverSelectionTimeoutMS=5000,  # 5 second timeout
-            connect=True,  # Force immediate connection attempt
-        )
-        
-        mongoengine.connect(
-            db='militex_cars',
-            host=MONGODB_URI,
-            username=MONGODB_USERNAME,
-            password=MONGODB_PASSWORD,
-            authentication_source=MONGODB_AUTH_SOURCE,
-            alias='cars_db',
-            serverSelectionTimeoutMS=5000,  # 5 second timeout
-            connect=True,  # Force immediate connection attempt
-        )
-    else:
-        # Connect without authentication
-        print("Using non-authenticated MongoDB connection")
-        mongoengine.connect(
-            db='militex_users',
-            host=MONGODB_URI,
-            alias='default',
-            serverSelectionTimeoutMS=5000,  # 5 second timeout
-            connect=True,  # Force immediate connection attempt
-        )
-        
-        mongoengine.connect(
-            db='militex_cars',
-            host=MONGODB_URI,
-            alias='cars_db',
-            serverSelectionTimeoutMS=5000,  # 5 second timeout
-            connect=True,  # Force immediate connection attempt
-        )
+    
+    # SSL/TLS is required for MongoDB Atlas connections
+    mongoengine.connect(
+        db='militex_users',
+        host=MONGODB_URI,
+        alias='default',
+        connectTimeoutMS=30000,  # 30 second timeout
+        serverSelectionTimeoutMS=30000,  # 30 second timeout
+        ssl=True,
+        ssl_cert_reqs=2  # CERT_REQUIRED (validates certificate)
+    )
+    
+    mongoengine.connect(
+        db='militex_cars',
+        host=MONGODB_URI,
+        alias='cars_db',
+        connectTimeoutMS=30000,  # 30 second timeout
+        serverSelectionTimeoutMS=30000,  # 30 second timeout
+        ssl=True,
+        ssl_cert_reqs=2  # CERT_REQUIRED (validates certificate)
+    )
+    
     print("MongoDB connection established successfully")
 except Exception as e:
     print(f"MongoDB connection error: {e}")
