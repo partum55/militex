@@ -29,18 +29,25 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 
 # Install Python dependencies
-# RUN pip install --use-pep517 pymongo==3.12.3
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
 COPY backend/ ./backend
 
-# Create media directories for MongoDB file storage
-RUN mkdir -p backend/media/car_images
+# Create media directories with proper permissions
+RUN mkdir -p backend/media/car_images && chmod -R 755 backend/media
 
-# Install the cronjob
-RUN echo "" >> backend/cronjob && crontab backend/cronjob
+# Create a placeholder image
+RUN touch backend/static/images/car-placeholder.jpg
+
+# Setup cron job
+RUN echo "*/2 * * * * cd /app && /usr/local/bin/python backend/manage.py runscript import_parsed_data >> /var/log/cron_import.log 2>&1" > /etc/cron.d/car_import_job
+RUN chmod 0644 /etc/cron.d/car_import_job
+RUN crontab /etc/cron.d/car_import_job
+
+# Create log file for cron
+RUN touch /var/log/cron_import.log && chmod 666 /var/log/cron_import.log
 
 # Copy built React frontend
 COPY --from=frontend-build /app/frontend/build/ ./backend/frontend_build/
@@ -51,7 +58,7 @@ RUN python backend/manage.py collectstatic --no-input
 # Copy supervisor configuration
 COPY backend/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Set permissions for cron if needed
+# Set permissions for supervisor config
 RUN chmod 0644 /etc/supervisor/conf.d/supervisord.conf
 
 # Expose the port

@@ -21,6 +21,13 @@ urlpatterns = [
     path('api/', include('accounts.urls')),
     path('api/cars/', include('cars.urls')),
     path('api/fundraisers/', include('fundraiser.urls')),
+    path('media/browse/<path:path>', serve, {
+            'document_root': settings.MEDIA_ROOT,
+            'show_indexes': True
+    }),
+    
+    # Regular media serving
+    path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
 
 # ---------------------------------------------------------------------
@@ -31,16 +38,18 @@ urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 # ---------------------------------------------------------------------
 # Serve media files in development
 # ---------------------------------------------------------------------
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-else:
-    # For production, add a simple pass-through to help with debugging
-    # This won't actually serve files in production, your web server should do that
-    urlpatterns += [
-        path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT})
-    ]
-
+# if settings.DEBUG:
+#     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# else:
+#     # For production, add a simple pass-through to help with debugging
+#     # This won't actually serve files in production, your web server should do that
+#     urlpatterns += [
+#         path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT})
+#     ]
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT})
+]
 # ---------------------------------------------------------------------
 # Catch-all: serve React's index.html for any other path
 # ---------------------------------------------------------------------

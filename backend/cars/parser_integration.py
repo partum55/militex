@@ -550,7 +550,6 @@ def import_cars_sync(limit=100, admin_user_id=1):
             # Create car in MongoDB
             car = Car.objects.create(**car_data)
             
-            # Process and download images
             images = []
             for i, img_url in enumerate(image_urls):
                 try:
@@ -582,7 +581,7 @@ def import_cars_sync(limit=100, admin_user_id=1):
                     
                 except Exception as e:
                     print(f"Error saving image {img_url}: {e}")
-            
+            print(images)
             # Update car with images
             if images:
                 car.images = images

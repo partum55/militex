@@ -20,6 +20,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'cronenburg-123890')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+# DEBUG = False
 
 ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost','joint-ilse-bodiyakol-fdedf48c.koyeb.app']
 

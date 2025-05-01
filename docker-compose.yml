@@ -1,5 +1,3 @@
-# docker-compose.yml
-
 version: '3.8'
 
 services:
@@ -19,16 +17,12 @@ services:
 
   django:
     build:
-      context: .  # Changed from ./backend to . (root directory)
+      context: .
       dockerfile: Dockerfile
     container_name: militex-django
-    command: >
-      sh -c "python backend/manage.py migrate &&
-             python backend/manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app/backend
-      - static-volume:/app/backend/staticfiles
-      - media-volume:/app/backend/media
+      - ./backend/media:/app/backend/media  # Direct map for persistence
     ports:
       - "8000:8000"
     environment:
@@ -44,8 +38,6 @@ services:
 
 volumes:
   mongodb-data:
-  static-volume:
-  media-volume:
 
 networks:
   militex-network:

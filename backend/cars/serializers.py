@@ -44,9 +44,11 @@ class CarImageSerializer(serializers.Serializer):
         if image_path:
             request = self.context.get('request')
             if request:
+                # Ensure path doesn't have leading slash duplication
+                if image_path.startswith('/'):
+                    image_path = image_path[1:]
                 return request.build_absolute_uri(f"{settings.MEDIA_URL}{image_path}")
         return None
-
 class CarSerializer(serializers.Serializer):
     id = serializers.SerializerMethodField()
     make = serializers.CharField(max_length=100)
