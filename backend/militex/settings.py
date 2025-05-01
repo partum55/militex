@@ -22,6 +22,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'cronenburg-123890')
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 # DEBUG = False
 
+FORCE_SERVE_MEDIA = True
 ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost','joint-ilse-bodiyakol-fdedf48c.koyeb.app']
 
 # Application definition
@@ -279,3 +280,12 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     X_FRAME_OPTIONS = 'DENY'
+
+if DEBUG or FORCE_SERVE_MEDIA:
+    # Override any production settings for media
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    
+    # Make sure directory exists
+    os.makedirs(MEDIA_ROOT, exist_ok=True)
+    os.makedirs(os.path.join(MEDIA_ROOT, 'car_images'), exist_ok=True)
