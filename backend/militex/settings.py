@@ -23,7 +23,9 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 # DEBUG = False
 
 FORCE_SERVE_MEDIA = True
-ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost','joint-ilse-bodiyakol-fdedf48c.koyeb.app']
+
+# ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost']
 
 # Application definition
 INSTALLED_APPS = [
