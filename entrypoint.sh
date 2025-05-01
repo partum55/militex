@@ -36,7 +36,7 @@ python manage.py shell -c "
 from django.contrib.auth import get_user_model;
 User = get_user_model();
 if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@example.com', 'admin123');
+    User.objects.create_superuser('admin', 'partumyt@gmail.com', 'Dr@Mi3rg');
     print('Created superuser: admin');
 else:
     print('Superuser already exists');
@@ -48,7 +48,7 @@ IMPORT_FLAG_FILE=".car_import_done"
 if [ ! -f "$IMPORT_FLAG_FILE" ]; then
     echo "Importing initial car data..."
     python manage.py import_cars --limit 20
-    echo "$(date -I)" > "$IMPORT_FLAG_FILE"  # Mark as done with current date
+    echo "$(date -I)" > "$IMPORT_FLAG_FILE"
 else
     echo "Car import already done, skipping."
 fi

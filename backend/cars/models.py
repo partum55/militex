@@ -1,92 +1,145 @@
 from django.db import models
-from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+import uuid
+import os
+
+User = get_user_model()
+
+
+def car_image_upload_path(instance, filename):
+    """Generate upload path for car images"""
+    ext = filename.split('.')[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    return os.path.join('cars', str(instance.car.id), filename)
 
 
 class Car(models.Model):
-    """Car model for PostgreSQL database"""
-
-    # Define choices as tuples for form display
-    CONDITION_CHOICES = (
-        ('new', _('New')),
-        ('used', _('Used')),
-        ('damaged', _('Damaged')),
-    )
-
-    FUEL_CHOICES = (
-        ('gasoline', _('Gasoline')),
-        ('diesel', _('Diesel')),
-        ('gas', _('Gas')),
-        ('electric', _('Electric')),
-        ('hybrid', _('Hybrid')),
+    """Car listing model"""
+    STATUS_CHOICES = (
+        ('active', _('Active')),
+        ('sold', _('Sold')),
+        ('pending', _('Pending')),
+        ('draft', _('Draft')),
     )
 
     BODY_TYPE_CHOICES = (
         ('sedan', _('Sedan')),
-        ('estate', _('Estate')),
         ('suv', _('SUV')),
-        ('pickup', _('Pickup')),
+        ('truck', _('Truck')),
         ('hatchback', _('Hatchback')),
-        ('liftback', _('Liftback')),
+        ('convertible', _('Convertible')),
         ('coupe', _('Coupe')),
-        ('fastback', _('Fastback')),
-        ('hardtop', _('Hardtop')),
+        ('van', _('Van')),
+        ('wagon', _('Wagon')),
+        ('other', _('Other')),
     )
 
     TRANSMISSION_CHOICES = (
-        ('manual', _('Manual')),
         ('automatic', _('Automatic')),
-        ('semi-automatic', _('Semi-Automatic')),
+        ('manual', _('Manual')),
+        ('semi-auto', _('Semi-Automatic')),
     )
 
-    # Seller info
-    seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cars')
+    FUEL_TYPE_CHOICES = (
+        ('petrol', _('Petrol')),
+        ('diesel', _('Diesel')),
+        ('electric', _('Electric')),
+        ('hybrid', _('Hybrid')),
+        ('other', _('Other')),
+    )
 
-    # Car details
-    make = models.CharField(_('Make'), max_length=100)
-    model = models.CharField(_('Model'), max_length=100)
-    year = models.PositiveIntegerField(_('Year of Manufacture'))
-    mileage = models.PositiveIntegerField(_('Mileage'))
-    vehicle_type = models.CharField(_('Vehicle Type'), max_length=100)
-    condition = models.CharField(_('Condition'), max_length=20, choices=CONDITION_CHOICES)
-    fuel_type = models.CharField(_('Fuel Type'), max_length=20, choices=FUEL_CHOICES)
-    transmission = models.CharField(_('Transmission'), max_length=20, choices=TRANSMISSION_CHOICES)
-    body_type = models.CharField(_('Body Type'), max_length=20, choices=BODY_TYPE_CHOICES, null=True, blank=True)
+    # Basic information
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cars')
+    make = models.CharField(max_length=100, db_index=True)
+    model = models.CharField(max_length=100, db_index=True)
+    year = models.PositiveIntegerField(db_index=True)
+    price = models.DecimalField(max_digits=12, decimal_places=2, db_index=True)
+    currency = models.CharField(max_length=3, default='USD')
+    mileage = models.PositiveIntegerField()
+    mileage_unit = models.CharField(max_length=10, default='km')
+
+    # Details
+    description = models.TextField(blank=True)
+    body_type = models.CharField(max_length=20, choices=BODY_TYPE_CHOICES, db_index=True)
+    fuel_type = models.CharField(max_length=20, choices=FUEL_TYPE_CHOICES, db_index=True)
+    transmission = models.CharField(max_length=20, choices=TRANSMISSION_CHOICES, db_index=True)
+    color = models.CharField(max_length=50)
+    vin = models.CharField(max_length=100, blank=True, null=True, unique=True)
 
     # Location
-    country = models.CharField(_('Country'), max_length=100)
-    city = models.CharField(_('City/Region'), max_length=100)
+    location_city = models.CharField(max_length=100)
+    location_state = models.CharField(max_length=100)
+    location_country = models.CharField(max_length=100)
+    location_latitude = models.FloatField(null=True, blank=True)
+    location_longitude = models.FloatField(null=True, blank=True)
 
-    # Price details
-    price = models.DecimalField(_('Price'), max_digits=10, decimal_places=2)
-    negotiable = models.BooleanField(_('Negotiable Price'), default=False)
+    # Status
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
 
-    # Engine details
-    engine_size = models.FloatField(_('Engine Size'), null=True, blank=True)
-    engine_power = models.PositiveIntegerField(_('Engine Power (HP)'), null=True, blank=True)
-
-    # Description and metadata
-    description = models.TextField(_('Description'), blank=True)
-    is_imported = models.BooleanField(_('Is Imported'), default=False)
-    original_url = models.URLField(_('Original URL'), null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = _('Car')
-        verbose_name_plural = _('Cars')
+        indexes = [
+            models.Index(fields=['make', 'model']),
+            models.Index(fields=['status', 'owner']),
+            models.Index(fields=['price', 'year']),
+            models.Index(fields=['location_city', 'location_state']),
+        ]
         ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.year} {self.make} {self.model}"
 
+    @property
+    def primary_image(self):
+        """Return the primary image for this car"""
+        primary = self.images.filter(is_primary=True).first()
+        if primary:
+            return primary
+        return self.images.first()  # Fallback to first image if no primary set
+
 
 class CarImage(models.Model):
-    """Car images model"""
+    """Image model for car listing"""
     car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='car_images/')
+    image = models.ImageField(upload_to=car_image_upload_path)
     is_primary = models.BooleanField(default=False)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-is_primary', 'created_at']
 
     def __str__(self):
-        return f"Image for {self.car}"
+        return f"Image for {self.car} ({'Primary' if self.is_primary else 'Secondary'})"
+
+
+class CarFeature(models.Model):
+    """Features for car listings (replaces embedded document from MongoDB)"""
+    car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='features')
+    name = models.CharField(max_length=100)
+    value = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = ['car', 'name']
+        indexes = [
+            models.Index(fields=['name', 'value']),
+        ]
+
+    def __str__(self):
+        return f"{self.name}: {self.value}"
+
+
+class CarContact(models.Model):
+    """Contact information for car listings (replaces embedded document from MongoDB)"""
+    car = models.OneToOneField(Car, on_delete=models.CASCADE, related_name='contact')
+    name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20)
+    email = models.EmailField()
+    preferred_contact_method = models.CharField(max_length=20, default='phone')
+
+    def __str__(self):
+        return f"Contact for {self.car}"
