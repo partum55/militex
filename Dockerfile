@@ -12,7 +12,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # ───────────────────────────────────────────────────────
-# 2) Python + Django + MongoDB stage
+# 2) Python + Django stage with built-in MongoDB
 # ───────────────────────────────────────────────────────
 FROM python:3.12-slim
 ENV \
@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     && apt-get clean
 
-# Install MongoDB (using a simpler, more reliable approach)
+# Install MongoDB
 RUN apt-get update && apt-get install -y wget && \
     wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add - && \
     echo "deb http://repo.mongodb.org/apt/debian bullseye/mongodb-org/6.0 main" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list && \
@@ -67,20 +67,77 @@ RUN touch /var/log/cron_import.log && chmod 666 /var/log/cron_import.log
 COPY --from=frontend-build /app/frontend/build/ ./backend/frontend_build/
 
 # Copy MongoDB initialization script
-COPY mongo-init.js /docker-entrypoint-initdb.d/
+COPY mongo-init.js /docker-entrypoint-initdb.d/mongo-init.js
 
-# Copy our entrypoint script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Create supervisor configuration inline
+RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'nodaemon=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'logfile=/var/log/supervisord.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'loglevel=info' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:migrate]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=python backend/manage.py migrate --noinput' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=10' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'startsecs=0' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autorestart=false' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'exitcodes=0,1,2' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:gunicorn]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=gunicorn militex.wsgi:application --bind 0.0.0.0:%(ENV_PORT)s --chdir backend --timeout 120' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=20' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'startretries=10' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:mongodb]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=mongod --bind_ip_all --dbpath /data/db' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=5' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'startretries=5' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'user=mongodb' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:cron]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=cron -f' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=30' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf
+
+# Create startup script
+RUN echo '#!/bin/bash\n\
+# Initialize MongoDB\n\
+mkdir -p /data/db\n\
+chown -R mongodb:mongodb /data/db\n\
+\n\
+# Set environment variables\n\
+export MONGODB_URI=mongodb://localhost:27017\n\
+export MONGODB_USERNAME=admin\n\
+export MONGODB_PASSWORD=admin_password\n\
+export MONGODB_AUTH_SOURCE=admin\n\
+\n\
+# Start supervisor\n\
+exec supervisord -c /etc/supervisor/conf.d/supervisord.conf\n\
+' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Collect static files
 RUN python backend/manage.py collectstatic --no-input
-
-# Copy supervisor configuration
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Set permissions for supervisor config
-RUN chmod 0644 /etc/supervisor/conf.d/supervisord.conf
 
 # Expose the port (Koyeb will use this)
 EXPOSE $PORT
