@@ -98,7 +98,7 @@ DATABASES = {
 }
 # MongoDB configuration with Koyeb environment variables
 # MongoDB connection settings
-MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://militex-test.koyeb.app:27017')
+MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017')
 MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', '')
 MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', '')
 MONGODB_AUTH_SOURCE = os.environ.get('MONGODB_AUTH_SOURCE', 'admin')
@@ -118,7 +118,9 @@ try:
             username=MONGODB_USERNAME,
             password=MONGODB_PASSWORD,
             authentication_source=MONGODB_AUTH_SOURCE,
-            alias='default'
+            alias='default',
+            serverSelectionTimeoutMS=5000,  # 5 second timeout
+            connect=True,  # Force immediate connection attempt
         )
         
         mongoengine.connect(
@@ -127,7 +129,9 @@ try:
             username=MONGODB_USERNAME,
             password=MONGODB_PASSWORD,
             authentication_source=MONGODB_AUTH_SOURCE,
-            alias='cars_db'
+            alias='cars_db',
+            serverSelectionTimeoutMS=5000,  # 5 second timeout
+            connect=True,  # Force immediate connection attempt
         )
     else:
         # Connect without authentication
@@ -135,13 +139,17 @@ try:
         mongoengine.connect(
             db='militex_users',
             host=MONGODB_URI,
-            alias='default'
+            alias='default',
+            serverSelectionTimeoutMS=5000,  # 5 second timeout
+            connect=True,  # Force immediate connection attempt
         )
         
         mongoengine.connect(
             db='militex_cars',
             host=MONGODB_URI,
-            alias='cars_db'
+            alias='cars_db',
+            serverSelectionTimeoutMS=5000,  # 5 second timeout
+            connect=True,  # Force immediate connection attempt
         )
     print("MongoDB connection established successfully")
 except Exception as e:

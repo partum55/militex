@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     wget \
     netcat \
+    procps \
     && apt-get clean
 
 # MongoDB installation (should work on bullseye)
@@ -73,11 +74,34 @@ RUN echo '#!/bin/bash\n\
 nc -z -w3 localhost 8000 || exit 1\n\
 ' > /healthcheck.sh && chmod +x /healthcheck.sh
 
+# Create MongoDB config file
+RUN echo 'net:\n\
+  bindIp: 0.0.0.0\n\
+  port: 27017\n\
+security:\n\
+  authorization: disabled\n\
+storage:\n\
+  dbPath: /data/db\n\
+processManagement:\n\
+  fork: false\n\
+' > /etc/mongod.conf
+
 # Create supervisor configuration inline
 RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
     echo 'nodaemon=true' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'logfile=/var/log/supervisord.log' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'loglevel=info' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:mongodb]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=mongod --config /etc/mongod.conf' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=5' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'startretries=5' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'user=mongodb' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '[program:migrate]' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'command=python backend/manage.py migrate --noinput' >> /etc/supervisor/conf.d/supervisord.conf && \
@@ -90,17 +114,6 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '[program:mongodb]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=mongod --bind_ip 127.0.0.1 --port 27017 --dbpath /data/db' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'priority=5' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'startretries=5' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'user=mongodb' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '[program:gunicorn]' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'command=gunicorn militex.wsgi:application --bind 0.0.0.0:%(ENV_PORT)s --chdir backend --timeout 120' >> /etc/supervisor/conf.d/supervisord.conf && \
@@ -133,39 +146,37 @@ chown -R mongodb:mongodb /data/db\n\
 \n\
 # Export MongoDB environment variables for Django\n\
 export MONGODB_URI=mongodb://localhost:27017\n\
-export MONGODB_USERNAME=admin\n\
-export MONGODB_PASSWORD=admin_password\n\
+export MONGODB_USERNAME=\n\
+export MONGODB_PASSWORD=\n\
 export MONGODB_AUTH_SOURCE=admin\n\
 \n\
 echo "Starting all services with supervisord..."\n\
-# Start supervisord but dont wait for it (background)\n\
+# Start supervisord\n\
 /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &\n\
 \n\
-# Give MongoDB some time to start\n\
 echo "Waiting for MongoDB to start..."\n\
-sleep 5\n\
-\n\
 # Wait for MongoDB to be ready\n\
-timeout=30\n\
-counter=0\n\
-until mongo --eval "db.adminCommand({ping:1})" localhost:27017/test >/dev/null 2>&1; do\n\
-  sleep 1\n\
-  counter=$((counter+1))\n\
-  if [ $counter -ge $timeout ]; then\n\
-    echo "ERROR: Timed out waiting for MongoDB to start."\n\
-    exit 1\n\
-  fi\n\
-  echo "Waiting for MongoDB... $counter/$timeout"\n\
+COUNTER=0\n\
+MAX_TRIES=30\n\
+until nc -z localhost 27017 || [ $COUNTER -eq $MAX_TRIES ]; do\n\
+  echo "Waiting for MongoDB... ($COUNTER/$MAX_TRIES)"\n\
+  sleep 2\n\
+  COUNTER=$((COUNTER+1))\n\
 done\n\
-echo "MongoDB is ready!"\n\
 \n\
-# Create admin user (ignore error if already exists)\n\
-echo "Creating MongoDB admin user..."\n\
-mongo admin --eval "db.createUser({user: \"admin\", pwd: \"admin_password\", roles: [{role: \"root\", db: \"admin\"}]})" || true\n\
+if [ $COUNTER -eq $MAX_TRIES ]; then\n\
+  echo "Error: MongoDB did not start in time. Checking MongoDB status:"\n\
+  ps aux | grep mongo\n\
+  cat /var/log/mongodb/mongod.log 2>/dev/null || echo "No MongoDB log file found"\n\
+  exit 1\n\
+fi\n\
 \n\
-# Initialize militex_users database\n\
-echo "Initializing militex_users database..."\n\
-mongo admin -u admin -p admin_password --eval '\n\
+echo "MongoDB is running! Testing connection..."\n\
+mongo --eval "printjson(db.serverStatus())" || echo "Warning: Could not connect to MongoDB but continuing..."\n\
+\n\
+# Initialize MongoDB databases\n\
+echo "Initializing MongoDB databases..."\n\
+mongo --eval '\n\
   db = db.getSiblingDB("militex_users");\n\
   try {\n\
     db.createCollection("users");\n\
@@ -173,11 +184,7 @@ mongo admin -u admin -p admin_password --eval '\n\
   } catch(e) {\n\
     print("Users collection already exists or error:", e);\n\
   }\n\
-'\n\
-\n\
-# Initialize militex_cars database\n\
-echo "Initializing militex_cars database..."\n\
-mongo admin -u admin -p admin_password --eval '\n\
+  \n\
   db = db.getSiblingDB("militex_cars");\n\
   try {\n\
     db.createCollection("car");\n\
@@ -207,6 +214,10 @@ echo "All services are running. Container is ready."\n\
 exec tail -f /var/log/supervisord.log\n\
 ' > /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 
+# Update settings.py with correct MongoDB connection logic
+COPY backend/militex/settings.py ./backend/militex/settings.py.original
+RUN sed -i 's/mongodb:\/\/militex-test.koyeb.app:27017/mongodb:\/\/localhost:27017/g' ./backend/militex/settings.py
+
 # Collect static files
 RUN python backend/manage.py collectstatic --no-input
 
@@ -215,7 +226,6 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 CMD /heal
 
 # Expose only the web app port
 EXPOSE $PORT
-EXPOSE 27017
 
 # Set the entrypoint script
 ENTRYPOINT ["/docker-entrypoint.sh"]
