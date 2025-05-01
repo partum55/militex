@@ -101,7 +101,7 @@ DATABASES = {
 # MongoDB configuration with MongoDB Atlas
 # MongoDB connection settings
 # In settings.py
-MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb+srv://militex:militex-test-mongo@cluster0.rpfehqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&ssl=true&tlsAllowInvalidCertificates=true&tlsInsecure=true')
+MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb+srv://militex:militex-test-mongo@cluster0.rpfehqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&ssl=true&tlsAllowInvalidCertificates=true')
 MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', '')
 MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', '')
 MONGODB_AUTH_SOURCE = os.environ.get('MONGODB_AUTH_SOURCE', 'admin')
