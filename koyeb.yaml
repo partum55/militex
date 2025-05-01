@@ -23,7 +23,7 @@ services:
       - name: DEBUG
         value: "False"
       - name: MONGODB_URI
-        value: "mongodb+srv://militex:militex-test-mongo@cluster0.rpfehqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    value: "mongodb+srv://militex:militex-test-mongo@cluster0.rpfehqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&tlsAllowInvalidCertificates=true"
     resources:
       cpu: 1000m
       memory: 2048Mi  # Increased memory allocation
