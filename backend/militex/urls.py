@@ -36,3 +36,4 @@ else:
 
 urlpatterns += [
     re_path(r'^(?!media).*$', TemplateView.as_view(template_name='index.html')),
+]
