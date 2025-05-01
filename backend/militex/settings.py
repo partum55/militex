@@ -100,7 +100,7 @@ DATABASES = {
 # MongoDB configuration with Koyeb environment variables
 # MongoDB configuration with MongoDB Atlas
 # MongoDB connection settings
-MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb+srv://militex:militex-test-mongo@cluster0.rpfehqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+MONGODB_URI = os.environ.get('MONGODB_URI', 'fallback_connection_string_for_local_dev')
 MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', '')
 MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', '')
 MONGODB_AUTH_SOURCE = os.environ.get('MONGODB_AUTH_SOURCE', 'admin')
