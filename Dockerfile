@@ -75,7 +75,7 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '[program:gunicorn]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=gunicorn militex.wsgi:application --bind 0.0.0.0:%(ENV_PORT)s --chdir backend --timeout 300' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=gunicorn militex.wsgi:application --bind 0.0.0.0:%(ENV_PORT)s --chdir backend --timeout 300 --workers 2 --threads 2 --max-requests 1000 --max-requests-jitter 50' >> /etc/supervisor/conf.d/supervisord.conf
     echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'priority=20' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
