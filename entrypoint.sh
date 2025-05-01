@@ -1,81 +1,70 @@
 #!/bin/bash
-set -e
+set -e  # Exit immediately if a command exits with a non-zero status
 
-# Initialize MongoDB data directory if needed
-mkdir -p /data/db
-chown -R mongodb:mongodb /data/db
+# Print environment info for debugging (without sensitive data)
+echo "Starting Militex application..."
+echo "Running as user: $(whoami)"
+echo "Current directory: $(pwd)"
+echo "PORT: ${PORT:-8000}"
+echo "DEBUG: ${DEBUG:-False}"
 
-# Export MongoDB environment variables for Django
-export MONGODB_URI=mongodb://localhost:8000
-export MONGODB_USERNAME=admin
-export MONGODB_PASSWORD=admin_password
-export MONGODB_AUTH_SOURCE=admin
+# Set default port if not provided
+if [ -z "$PORT" ]; then
+    PORT=8000
+    echo "PORT not set, defaulting to 8000"
+fi
 
-echo "Starting all services with supervisord..."
-# Start supervisord but don't wait for it (background)
-/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &
+# Wait for PostgreSQL database to be available
+echo "Checking database connection..."
+./wait-for-db.sh
 
-# Give MongoDB some time to start
-echo "Waiting for MongoDB to start..."
-sleep 5
+# Apply database migrations
+echo "Applying database migrations..."
+python manage.py migrate --no-input
 
-# Wait for MongoDB to be ready
-timeout=30
-counter=0
-until mongo --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
-  sleep 1
-  counter=$((counter+1))
-  if [ $counter -ge $timeout ]; then
-    echo "ERROR: Timed out waiting for MongoDB to start."
-    exit 1
-  fi
-  echo "Waiting for MongoDB... $counter/$timeout"
-done
-echo "MongoDB is ready!"
+# Create a placeholder image if needed
+echo "Ensuring placeholder images exist..."
+python create_placeholder_image.py
 
-# Create admin user (ignore error if already exists)
-echo "Creating MongoDB admin user..."
-mongo admin --eval "db.createUser({user: 'admin', pwd: 'admin_password', roles: ['root']})" || true
+# Collect static files (in case they weren't collected during build)
+echo "Collecting static files..."
+python manage.py collectstatic --no-input
 
-# Initialize militex_users database
-echo "Initializing militex_users database..."
-mongo admin -u admin -p admin_password --eval '
-  db = db.getSiblingDB("militex_users");
-  try {
-    db.createCollection("users");
-    print("Created users collection");
-  } catch(e) {
-    print("Users collection already exists or error:", e);
-  }
-'
+# Check if we need to create a superuser
+echo "Checking for superuser..."
+python manage.py shell -c "
+from django.contrib.auth import get_user_model;
+User = get_user_model();
+if not User.objects.filter(username='admin').exists():
+    User.objects.create_superuser('admin', 'admin@example.com', 'admin123');
+    print('Created superuser: admin');
+else:
+    print('Superuser already exists');
+"
 
-# Initialize militex_cars database
-echo "Initializing militex_cars database..."
-mongo admin -u admin -p admin_password --eval '
-  db = db.getSiblingDB("militex_cars");
-  try {
-    db.createCollection("car");
-    print("Created car collection");
-  } catch(e) {
-    print("Car collection already exists or error:", e);
-  }
-  
-  // Create indexes
-  try {
-    db.car.createIndex({ "make": 1 });
-    db.car.createIndex({ "model": 1 });
-    db.car.createIndex({ "year": 1 });
-    db.car.createIndex({ "price": 1 });
-    db.car.createIndex({ "seller_id": 1 });
-    db.car.createIndex({ "created_at": -1 });
-    print("Created car collection indexes");
-  } catch(e) {
-    print("Index creation error:", e);
-  }
-'
+# Check if car data needs to be imported
+echo "Checking car import status..."
+IMPORT_FLAG_FILE=".car_import_done"
+if [ ! -f "$IMPORT_FLAG_FILE" ]; then
+    echo "Importing initial car data..."
+    python manage.py import_cars --limit 20
+    echo "$(date -I)" > "$IMPORT_FLAG_FILE"  # Mark as done with current date
+else
+    echo "Car import already done, skipping."
+fi
 
-echo "MongoDB initialization complete."
-echo "All services are running. Container is ready."
-
-# Keep container running by tailing the supervisord log
-exec tail -f /var/log/supervisord.log
+# Start Gunicorn server
+echo "Starting Gunicorn server on 0.0.0.0:${PORT}..."
+exec gunicorn militex.wsgi:application --bind "0.0.0.0:${PORT}" \
+    --workers=2 \
+    --threads=4 \
+    --worker-class=gthread \
+    --worker-tmp-dir=/dev/shm \
+    --log-file=- \
+    --access-logfile=- \
+    --error-logfile=- \
+    --capture-output \
+    --log-level=info \
+    --max-requests=1000 \
+    --max-requests-jitter=50 \
+    --timeout=30

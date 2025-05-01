@@ -13,7 +13,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # ───────────────────────────────────────────────────────
-# 2) Build final image with Django and PostgreSQL support
+# 2) Build final image with Django
 # ───────────────────────────────────────────────────────
 FROM python:3.12-slim
 
@@ -27,6 +27,7 @@ RUN apt-get update \
        build-essential \
        libpq-dev \
        gettext \
+       netcat-traditional \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,7 +37,6 @@ WORKDIR /app/backend
 # Install Python dependencies
 COPY requirements.txt ./
 RUN pip install --upgrade pip \
-    && pip install psycopg2-binary \
     && pip install -r requirements.txt
 
 # Copy backend code
@@ -45,19 +45,30 @@ COPY backend/ ./
 # Create media directory for file uploads
 RUN mkdir -p /app/backend/media/car_images
 
+# Copy static and placeholder image
+RUN mkdir -p /app/backend/static/images
+COPY backend/create_placeholder_image.py ./
+RUN python create_placeholder_image.py
+
 # Copy the React build files from the frontend stage
 COPY --from=frontend /app/frontend/build /app/backend/frontend_build
 
 # Collect static files
 RUN python manage.py collectstatic --no-input
 
+# Create wait-for-db script
+COPY wait-for-db.sh /app/backend/
+RUN chmod +x /app/backend/wait-for-db.sh
+
 # Expose the port
 EXPOSE 8000
 
 # Create entrypoint script
 RUN echo '#!/bin/bash\n\
+./wait-for-db.sh\n\
 python manage.py migrate --no-input\n\
-gunicorn militex.wsgi:application --bind 0.0.0.0:8000\n\
+echo "Starting Gunicorn"\n\
+gunicorn militex.wsgi:application --bind 0.0.0.0:$PORT\n\
 ' > /app/entrypoint.sh \
 && chmod +x /app/entrypoint.sh
 

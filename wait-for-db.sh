@@ -3,31 +3,26 @@
 
 set -e
 
-# Load database configuration from Django settings
-HOST=$(python -c "from django.conf import settings; print(settings.DATABASES['default']['HOST'])")
-PORT=$(python -c "from django.conf import settings; print(settings.DATABASES['default'].get('PORT', 5432))")
-USER=$(python -c "from django.conf import settings; print(settings.DATABASES['default']['USER'])")
-PASSWORD=$(python -c "from django.conf import settings; print(settings.DATABASES['default']['PASSWORD'])")
-DB=$(python -c "from django.conf import settings; print(settings.DATABASES['default']['NAME'])")
+echo "Waiting for PostgreSQL to be ready..."
 
-# Set default port if none is provided
-if [ -z "$PORT" ]; then
-  PORT=5432
+# Extract values from Django settings or environment variables
+if [ -z "$DATABASE_URL" ]; then
+  # These will be set by Koyeb
+  HOST="${DATABASE_HOST:-ep-small-sunset-a2woub0s.eu-central-1.pg.koyeb.app}"
+  PORT="${DATABASE_PORT:-5432}"
+  USER="${DATABASE_USER:-koyeb-adm}"
+  PASSWORD="${DATABASE_PASSWORD:-npg_QRJc0t7HBSNq}"
+  DB="${DATABASE_NAME:-koyebdb}"
+else
+  # Parse from DATABASE_URL if available
+  echo "Using DATABASE_URL for connection info"
 fi
 
-echo "Waiting for PostgreSQL to be ready at $HOST:$PORT..."
-
-# Function to check if PostgreSQL is ready
-function check_postgres() {
-  PGPASSWORD=$PASSWORD psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -c "SELECT 1" >/dev/null 2>&1
-  return $?
-}
-
 # Wait until PostgreSQL is ready
-until check_postgres; do
+export PGPASSWORD=$PASSWORD
+until psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -c '\q'; do
   echo "PostgreSQL is unavailable - sleeping"
   sleep 2
 done
 
-echo "PostgreSQL is up - executing command"
-exec "$@"
+echo "PostgreSQL is up - continuing"
