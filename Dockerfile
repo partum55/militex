@@ -34,20 +34,15 @@ RUN apt-get update && apt-get install -y \
 
 # Install MongoDB with libssl1.1 dependency
 RUN apt-get update && apt-get install -y wget && \
-    # Add the Debian 11 (bullseye) repo for libssl1.1
     echo "deb http://security.debian.org/debian-security bullseye-security main" > /etc/apt/sources.list.d/bullseye-security.list && \
     apt-get update && \
-    # Install libssl1.1 from bullseye repos
     apt-get install -y libssl1.1 && \
-    # Now install MongoDB
     wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add - && \
     echo "deb http://repo.mongodb.org/apt/debian bullseye/mongodb-org/6.0 main" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list && \
     apt-get update && \
     apt-get install -y mongodb-org && \
     apt-get clean && \
-    # Remove the bullseye security repo after installation
     rm /etc/apt/sources.list.d/bullseye-security.list && \
-    # Create MongoDB data directory
     mkdir -p /data/db && \
     chown -R mongodb:mongodb /data/db
 
