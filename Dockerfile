@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     curl \
     wget \
+    netcat \
     && apt-get clean
 
 # MongoDB installation (should work on bullseye)
@@ -67,6 +68,11 @@ RUN touch /var/log/cron_import.log && chmod 666 /var/log/cron_import.log
 # Copy built React frontend
 COPY --from=frontend-build /app/frontend/build/ ./backend/frontend_build/
 
+# Create healthcheck script for web application
+RUN echo '#!/bin/bash\n\
+nc -z -w3 localhost 8000 || exit 1\n\
+' > /healthcheck.sh && chmod +x /healthcheck.sh
+
 # Create supervisor configuration inline
 RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
     echo 'nodaemon=true' >> /etc/supervisor/conf.d/supervisord.conf && \
@@ -86,7 +92,7 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '[program:mongodb]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=mongod --bind_ip_all --dbpath /data/db' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=mongod --bind_ip 127.0.0.1 --port 27017 --dbpath /data/db' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'priority=5' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'startretries=5' >> /etc/supervisor/conf.d/supervisord.conf && \
@@ -117,40 +123,10 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf
 
-# Create MongoDB initialization script
+# Create entrypoint script with improved MongoDB initialization
 RUN echo '#!/bin/bash\n\
-# MongoDB initialization script\n\
-timeout=30\n\
-counter=0\n\
-echo "Waiting for MongoDB to start..."\n\
-until mongo --eval "db.adminCommand(\"ping\")" >/dev/null 2>&1; do\n\
-  sleep 1\n\
-  counter=$((counter+1))\n\
-  if [ $counter -ge $timeout ]; then\n\
-    echo "Timed out waiting for MongoDB to start. Exiting."\n\
-    exit 1\n\
-  fi\n\
-  echo "Waiting for MongoDB... $counter/$timeout"\n\
-done\n\
+set -e\n\
 \n\
-echo "MongoDB started. Initializing..."\n\
-\n\
-# Create admin user\n\
-mongo admin --eval "db.createUser({user: \"admin\", pwd: \"admin_password\", roles: [\"root\"]})"\n\
-\n\
-# Create databases and collections\n\
-mongo admin -u admin -p admin_password --eval "db = db.getSiblingDB(\"militex_users\"); try { db.createCollection(\"users\"); print(\"Created users collection\"); } catch(e) { print(e); }"\n\
-mongo admin -u admin -p admin_password --eval "db = db.getSiblingDB(\"militex_cars\"); try { db.createCollection(\"car\"); print(\"Created car collection\"); } catch(e) { print(e); }"\n\
-\n\
-# Create indexes\n\
-mongo admin -u admin -p admin_password --eval "db = db.getSiblingDB(\"militex_cars\"); try { db.car.createIndex({ \"make\": 1 }); db.car.createIndex({ \"model\": 1 }); db.car.createIndex({ \"year\": 1 }); db.car.createIndex({ \"price\": 1 }); db.car.createIndex({ \"seller_id\": 1 }); db.car.createIndex({ \"created_at\": -1 }); print(\"Created indexes\"); } catch(e) { print(e); }"\n\
-\n\
-echo "MongoDB initialization complete."\n\
-' > /init-mongodb.sh && \
-chmod +x /init-mongodb.sh
-
-# Create entrypoint script
-RUN echo '#!/bin/bash\n\
 # Initialize MongoDB data directory if needed\n\
 mkdir -p /data/db\n\
 chown -R mongodb:mongodb /data/db\n\
@@ -161,24 +137,83 @@ export MONGODB_USERNAME=admin\n\
 export MONGODB_PASSWORD=admin_password\n\
 export MONGODB_AUTH_SOURCE=admin\n\
 \n\
-# Start supervisord\n\
-supervisord -c /etc/supervisor/conf.d/supervisord.conf &\n\
+echo "Starting all services with supervisord..."\n\
+# Start supervisord but dont wait for it (background)\n\
+/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &\n\
 \n\
 # Give MongoDB some time to start\n\
+echo "Waiting for MongoDB to start..."\n\
 sleep 5\n\
 \n\
-# Run MongoDB initialization script\n\
-/init-mongodb.sh\n\
+# Wait for MongoDB to be ready\n\
+timeout=30\n\
+counter=0\n\
+until mongo --eval "db.adminCommand({ping:1})" localhost:27017/test >/dev/null 2>&1; do\n\
+  sleep 1\n\
+  counter=$((counter+1))\n\
+  if [ $counter -ge $timeout ]; then\n\
+    echo "ERROR: Timed out waiting for MongoDB to start."\n\
+    exit 1\n\
+  fi\n\
+  echo "Waiting for MongoDB... $counter/$timeout"\n\
+done\n\
+echo "MongoDB is ready!"\n\
 \n\
-# Wait for all services\n\
-wait\n\
-' > /docker-entrypoint.sh && \
-chmod +x /docker-entrypoint.sh
+# Create admin user (ignore error if already exists)\n\
+echo "Creating MongoDB admin user..."\n\
+mongo admin --eval "db.createUser({user: \"admin\", pwd: \"admin_password\", roles: [{role: \"root\", db: \"admin\"}]})" || true\n\
+\n\
+# Initialize militex_users database\n\
+echo "Initializing militex_users database..."\n\
+mongo admin -u admin -p admin_password --eval '\n\
+  db = db.getSiblingDB("militex_users");\n\
+  try {\n\
+    db.createCollection("users");\n\
+    print("Created users collection");\n\
+  } catch(e) {\n\
+    print("Users collection already exists or error:", e);\n\
+  }\n\
+'\n\
+\n\
+# Initialize militex_cars database\n\
+echo "Initializing militex_cars database..."\n\
+mongo admin -u admin -p admin_password --eval '\n\
+  db = db.getSiblingDB("militex_cars");\n\
+  try {\n\
+    db.createCollection("car");\n\
+    print("Created car collection");\n\
+  } catch(e) {\n\
+    print("Car collection already exists or error:", e);\n\
+  }\n\
+  \n\
+  // Create indexes\n\
+  try {\n\
+    db.car.createIndex({ "make": 1 });\n\
+    db.car.createIndex({ "model": 1 });\n\
+    db.car.createIndex({ "year": 1 });\n\
+    db.car.createIndex({ "price": 1 });\n\
+    db.car.createIndex({ "seller_id": 1 });\n\
+    db.car.createIndex({ "created_at": -1 });\n\
+    print("Created car collection indexes");\n\
+  } catch(e) {\n\
+    print("Index creation error:", e);\n\
+  }\n\
+'\n\
+\n\
+echo "MongoDB initialization complete."\n\
+echo "All services are running. Container is ready."\n\
+\n\
+# Keep container running by tailing the supervisord log\n\
+exec tail -f /var/log/supervisord.log\n\
+' > /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 
 # Collect static files
 RUN python backend/manage.py collectstatic --no-input
 
-# Expose the port
+# Add Docker healthcheck for web app only
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 CMD /healthcheck.sh
+
+# Expose only the web app port
 EXPOSE $PORT
 
 # Set the entrypoint script
