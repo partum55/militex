@@ -40,15 +40,30 @@ class CarImageSerializer(serializers.Serializer):
         return str(ObjectId())
     
     def get_image(self, obj):
+        """Generate proper image URL that works with Django's static file handling"""
+        if not hasattr(obj, 'image_path'):
+            return None
+            
         image_path = obj.image_path
-        if image_path:
-            request = self.context.get('request')
-            if request:
-                # Ensure path doesn't have leading slash duplication
-                if image_path.startswith('/'):
-                    image_path = image_path[1:]
-                return request.build_absolute_uri(f"{settings.MEDIA_URL}{image_path}")
-        return None
+        
+        if not image_path:
+            return None
+            
+        # Clean up path to ensure it works with URL construction
+        if image_path.startswith('/'):
+            image_path = image_path[1:]
+            
+        # For debugging
+        print(f"Original image_path: {obj.image_path}")
+        print(f"Normalized image_path: {image_path}")
+            
+        request = self.context.get('request')
+        if request:
+            # Build the media URL correctly
+            return request.build_absolute_uri(f'/media/{image_path}')
+        
+        # Fallback if no request in context
+        return f'/media/{image_path}'
 class CarSerializer(serializers.Serializer):
     id = serializers.SerializerMethodField()
     make = serializers.CharField(max_length=100)

@@ -558,10 +558,14 @@ def import_cars_sync(limit=100, admin_user_id=1):
                     response.raise_for_status()
                     
                     # Generate filename and path
-                    filename = f"{str(ObjectId())}_{os.path.basename(img_url)}"
-                    if '.' not in filename:
-                        filename += '.jpg'  # Add extension if missing
-                        
+                    from datetime import datetime
+                    import os
+                    
+                    # Create a unique filename with timestamp and ObjectId
+                    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                    filename = f"{timestamp}_{str(ObjectId())}.jpg"
+                    
+                    # Store relative path without leading slash
                     image_path = f"car_images/{filename}"
                     
                     # Save file to disk
@@ -569,18 +573,33 @@ def import_cars_sync(limit=100, admin_user_id=1):
                     os.makedirs(save_path, exist_ok=True)
                     
                     full_path = os.path.join(save_path, filename)
+                    
+                    # Debug output
+                    print(f"Saving image to: {full_path}")
+                    print(f"Image URL was: {img_url}")
+                    
                     with open(full_path, 'wb') as f:
                         f.write(response.content)
                     
-                    # Add to images array
+                    # Debug: verify file exists and size is non-zero
+                    if os.path.exists(full_path):
+                        file_size = os.path.getsize(full_path)
+                        print(f"✓ Saved file {filename}, size: {file_size} bytes")
+                    else:
+                        print(f"❌ Failed to save file {filename}")
+                        continue
+                        
+                    # Add to images array - important: don't add leading slash!
                     car_image = CarImage(
-                        image_path=image_path,
+                        image_path=image_path,  
                         is_primary=(i == 0)
                     )
                     images.append(car_image)
                     
                 except Exception as e:
                     print(f"Error saving image {img_url}: {e}")
+                    import traceback
+                    traceback.print_exc()
             print(images)
             # Update car with images
             if images:

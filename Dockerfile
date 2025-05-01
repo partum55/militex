@@ -12,7 +12,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # ───────────────────────────────────────────────────────
-# 2) Python + Django stage
+# 2) Python + Django + MongoDB stage
 # ───────────────────────────────────────────────────────
 FROM python:3.12-slim
 ENV \
@@ -55,7 +55,7 @@ COPY --from=frontend-build /app/frontend/build/ ./backend/frontend_build/
 # Collect static files
 RUN python backend/manage.py collectstatic --no-input
 
-# Copy supervisor configuration
+# Update supervisor configuration to include MongoDB
 COPY backend/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Set permissions for supervisor config
