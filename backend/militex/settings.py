@@ -23,7 +23,7 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 # DEBUG = False
 
 FORCE_SERVE_MEDIA = True
-ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost','joint-ilse-bodiyakol-fdedf48c.koyeb.app']
+ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost','militex-test.koyeb.app']
 
 # ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost']
 
@@ -229,11 +229,11 @@ SIMPLE_JWT = {
 CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False') == 'True'
 CSRF_COOKIE_HTTPONLY = False  # Keep False to allow JS access
 CSRF_COOKIE_SAMESITE = os.environ.get('CSRF_COOKIE_SAMESITE', 'Lax')
-CSRF_TRUSTED_ORIGINS = ['https://militex.koyeb.app', 'http://militex.koyeb.app', 'https://127.0.0.1:8000', 'https://localhost:8000', 'https://joint-ilse-bodiyakol-fdedf48c.koyeb.app']
+CSRF_TRUSTED_ORIGINS = ['https://militex.koyeb.app', 'http://militex.koyeb.app', 'https://127.0.0.1:8000', 'https://localhost:8000', 'https://militex-test.koyeb.app']
 
 # CORS settings
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = ['https://militex.koyeb.app', 'http://militex.koyeb.app', 'https://127.0.0.1:8000', 'https://localhost:8000', 'https://joint-ilse-bodiyakol-fdedf48c.koyeb.app']
+CORS_ALLOWED_ORIGINS = ['https://militex.koyeb.app', 'http://militex.koyeb.app', 'https://127.0.0.1:8000', 'https://localhost:8000', 'https://militex-test.koyeb.app']
 
 # Allow specific HTTP methods
 CORS_ALLOW_METHODS = [
@@ -269,8 +269,10 @@ if not DEBUG:
     
     # Add correct trusted origins for CSRF
     CSRF_TRUSTED_ORIGINS = [
-        'https://militex.koyeb.app', 
+        'https://militex.koyeb.app',
+        'https://militex-test.koyeb.app'
         'http://militex.koyeb.app',
+        'http://militex-test.koyeb.app'
         'https://*.koyeb.app', 
         'http://*.koyeb.app'
     ]
