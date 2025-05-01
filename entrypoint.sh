@@ -6,7 +6,7 @@ mkdir -p /data/db
 chown -R mongodb:mongodb /data/db
 
 # Export MongoDB environment variables for Django
-export MONGODB_URI=mongodb://localhost:27017
+export MONGODB_URI=mongodb://localhost:8000
 export MONGODB_USERNAME=admin
 export MONGODB_PASSWORD=admin_password
 export MONGODB_AUTH_SOURCE=admin
