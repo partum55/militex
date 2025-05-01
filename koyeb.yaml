@@ -22,9 +22,11 @@ services:
         value: "militex.settings"
       - name: DEBUG
         value: "False"
+      - name: MONGODB_URI
+        value: "mongodb+srv://militex:militex-test-mongo@cluster0.rpfehqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
     resources:
       cpu: 1000m
-      memory: 1024Mi
+      memory: 2048Mi  # Increased memory allocation
     scaling:
       min: 1
       max: 1

@@ -47,6 +47,7 @@ RUN mkdir -p backend/static/images && touch backend/static/images/car-placeholde
 
 # Create log files
 RUN touch /var/log/app.log && chmod 666 /var/log/app.log
+RUN mkdir -p /var/log && touch /var/log/supervisord.log && chmod 666 /var/log/supervisord.log
 
 # Copy built React frontend
 COPY --from=frontend-build /app/frontend/build/ ./backend/frontend_build/
@@ -75,7 +76,7 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '[program:gunicorn]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=gunicorn militex.wsgi:application --bind 0.0.0.0:%(ENV_PORT)s --chdir backend --timeout 300 --workers 2 --threads 2 --max-requests 1000 --max-requests-jitter 50' >> /etc/supervisor/conf.d/supervisord.conf
+    echo 'command=gunicorn militex.wsgi:application --bind 0.0.0.0:%(ENV_PORT)s --chdir backend --timeout 300 --workers 1 --threads 4 --max-requests 1000 --max-requests-jitter 50' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'priority=20' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
@@ -89,14 +90,14 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
+# Create log directory and file if they dont exist\n\
+mkdir -p /var/log\n\
+touch /var/log/supervisord.log\n\
+chmod 666 /var/log/supervisord.log\n\
+\n\
 echo "Starting all services with supervisord..."\n\
-# Start supervisord\n\
-/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &\n\
-\n\
-echo "All services are running. Container is ready."\n\
-\n\
-# Keep container running by tailing the supervisord log\n\
-exec tail -f /var/log/supervisord.log\n\
+# Start supervisord in foreground\n\
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n\n\
 ' > /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 
 # Collect static files
