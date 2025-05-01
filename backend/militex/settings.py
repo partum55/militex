@@ -98,7 +98,7 @@ DATABASES = {
 }
 # MongoDB configuration with Koyeb environment variables
 # MongoDB connection settings
-MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017')
+MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:8000')
 MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', '')
 MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', '')
 MONGODB_AUTH_SOURCE = os.environ.get('MONGODB_AUTH_SOURCE', 'admin')

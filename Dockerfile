@@ -86,7 +86,7 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '[program:mongodb]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=mongod --bind_ip_all --dbpath /data/db' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=mongod --bind_ip 0.0.0.0 --port 8000 --dbpath /data/db' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'priority=5' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'startretries=5' >> /etc/supervisor/conf.d/supervisord.conf && \
@@ -156,7 +156,7 @@ mkdir -p /data/db\n\
 chown -R mongodb:mongodb /data/db\n\
 \n\
 # Export MongoDB environment variables for Django\n\
-export MONGODB_URI=mongodb://localhost:27017\n\
+export MONGODB_URI=mongodb://localhost:8000\n\
 export MONGODB_USERNAME=admin\n\
 export MONGODB_PASSWORD=admin_password\n\
 export MONGODB_AUTH_SOURCE=admin\n\
@@ -179,7 +179,7 @@ chmod +x /docker-entrypoint.sh
 RUN python backend/manage.py collectstatic --no-input
 
 # Expose the port
-EXPOSE $PORT
+EXPOSE 8000
 
 # Set the entrypoint script
 ENTRYPOINT ["/docker-entrypoint.sh"]
