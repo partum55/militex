@@ -25,6 +25,7 @@ WORKDIR /app
 
 # Install system dependencies (minimal, no MongoDB)
 RUN apt-get update && apt-get install -y \
+    ca-certificates \
     supervisor \
     curl \
     netcat \

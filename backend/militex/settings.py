@@ -8,6 +8,7 @@ from pathlib import Path
 from datetime import timedelta
 from django.core.management.utils import get_random_secret_key
 import mimetypes
+import ssl
 
 mimetypes.add_type("text/javascript", ".js", True)
 mimetypes.add_type("text/css", ".css", True)
@@ -111,25 +112,27 @@ print(f"MongoDB connection info: {MONGODB_URI}, user: {MONGODB_USERNAME}, auth_s
 try:
     print(f"Connecting to MongoDB: {MONGODB_URI}")
     
-    # SSL/TLS is required for MongoDB Atlas connections
     mongoengine.connect(
-        db='militex_users',
-        host=MONGODB_URI,
-        alias='default',
-        connectTimeoutMS=30000,  # 30 second timeout
-        serverSelectionTimeoutMS=30000,  # 30 second timeout
-        ssl=True,
-        ssl_cert_reqs=2  # CERT_REQUIRED (validates certificate)
+    db='militex_users',
+    host=MONGODB_URI,
+    alias='default',
+    ssl=True,
+    tlsCAFile="/etc/ssl/certs/ca-certificates.crt",  # Point to system CA certificates
+    connectTimeoutMS=30000,
+    socketTimeoutMS=60000,
+    serverSelectionTimeoutMS=30000
     )
-    
+
+    # Same for cars_db connection
     mongoengine.connect(
         db='militex_cars',
         host=MONGODB_URI,
         alias='cars_db',
-        connectTimeoutMS=30000,  # 30 second timeout
-        serverSelectionTimeoutMS=30000,  # 30 second timeout
         ssl=True,
-        ssl_cert_reqs=2  # CERT_REQUIRED (validates certificate)
+        tlsCAFile="/etc/ssl/certs/ca-certificates.crt",  # Point to system CA certificates
+        connectTimeoutMS=30000,
+        socketTimeoutMS=60000,
+        serverSelectionTimeoutMS=30000
     )
     
     print("MongoDB connection established successfully")

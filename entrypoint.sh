@@ -11,6 +11,12 @@ export MONGODB_USERNAME=admin
 export MONGODB_PASSWORD=admin_password
 export MONGODB_AUTH_SOURCE=admin
 
+
+# Create log directory and file if they don't exist
+mkdir -p /var/log
+touch /var/log/supervisord.log
+chmod 666 /var/log/supervisord.log
+
 echo "Starting all services with supervisord..."
 # Start supervisord but don't wait for it (background)
 /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &
