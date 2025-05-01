@@ -1,19 +1,3 @@
-version: '3'
-
-services:
-  web:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app/backend
-      - ./frontend:/app/frontend
-    environment:
-      - DEBUG=True
-      - DATABASE_URL=sqlite:///db.sqlite3
-      - SECRET_KEY=cronenburg-123890
-    command: sh -c "cd backend && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-
 # Python artifacts
 __pycache__/
 *.py[cod]
@@ -23,7 +7,6 @@ __pycache__/
 # Django stuff
 db.sqlite3
 backend/staticfiles/
-*/migrations/
 
 # Node/React
 frontend/node_modules/
@@ -41,6 +24,6 @@ frontend/build/
 .vscode/
 .DS_Store
 
-# Docker compose files (if present)
+# Docker related files (we'll use specific files)
 docker-compose*.yml
 docker-compose*.yaml
