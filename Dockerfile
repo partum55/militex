@@ -1,185 +1,53 @@
 # ───────────────────────────────────────────────────────
-# 1) Frontend build stage
+# 1) Build React frontend
 # ───────────────────────────────────────────────────────
-FROM node:18-alpine AS frontend-build
+FROM node:18-alpine AS frontend
 WORKDIR /app/frontend
 
 COPY frontend/package*.json ./
-ENV SKIP_PREFLIGHT_CHECK=true
 RUN npm ci
 
 COPY frontend/ ./
 RUN npm run build
 
+
 # ───────────────────────────────────────────────────────
-# 2) Python + Django stage with MongoDB
+# 2) Build Django + MongoDB image
 # ───────────────────────────────────────────────────────
-# Use older Python image based on Debian Bullseye
-FROM python:3.9-slim-bullseye
-ENV \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PORT=8000 \
-    DEBIAN_FRONTEND=noninteractive
+FROM python:3.10-slim
 
-WORKDIR /app
+# 1. Set working directory
+WORKDIR /app/backend
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    cron \
-    supervisor \
-    sqlite3 \
-    gnupg \
-    curl \
-    wget \
-    && apt-get clean
+# 2. Install system dependencies
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      build-essential \
+      supervisor \
+      mongodb \
+ && rm -rf /var/lib/apt/lists/* \
+ # 3. Create MongoDB data dir
+ && mkdir -p /data/db
 
-# MongoDB installation (should work on bullseye)
-RUN wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | apt-key add - && \
-    echo "deb http://repo.mongodb.org/apt/debian bullseye/mongodb-org/5.0 main" | tee /etc/apt/sources.list.d/mongodb-org-5.0.list && \
-    apt-get update && \
-    apt-get install -y mongodb-org && \
-    apt-get clean && \
-    mkdir -p /data/db && \
-    chown -R mongodb:mongodb /data/db
+# 4. Bring in compiled frontend into Django’s template folder
+COPY --from=frontend /app/frontend/build ../frontend_build
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# 5. Install Python deps
+COPY backend/requirements.txt ./
+RUN pip install --upgrade pip \
+ && pip install -r requirements.txt
 
-# Copy backend code
-COPY backend/ ./backend
+# 6. Copy the rest of your Django project
+COPY backend/ ./
 
-# Create media directories with proper permissions
-RUN mkdir -p backend/media/car_images && chmod -R 755 backend/media
+# 7. Copy Supervisor config
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Create a placeholder image
-RUN mkdir -p backend/static/images && touch backend/static/images/car-placeholder.jpg
+# 8. Collect static files (so WhiteNoise can serve them)
+RUN python manage.py collectstatic --no-input
 
-# Setup cron job
-RUN echo "*/5 * * * * cd /app && /usr/local/bin/python backend/manage.py runscript import_parsed_data >> /var/log/cron_import.log 2>&1" > /etc/cron.d/car_import_job
-RUN chmod 0644 /etc/cron.d/car_import_job
-RUN crontab /etc/cron.d/car_import_job
-
-# Create log file for cron
-RUN touch /var/log/cron_import.log && chmod 666 /var/log/cron_import.log
-
-# Copy built React frontend
-COPY --from=frontend-build /app/frontend/build/ ./backend/frontend_build/
-
-# Create supervisor configuration inline
-RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'nodaemon=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'logfile=/var/log/supervisord.log' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'loglevel=info' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '[program:migrate]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=python backend/manage.py migrate --noinput' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'priority=10' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'startsecs=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autorestart=false' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'exitcodes=0,1,2' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '[program:mongodb]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=mongod --bind_ip 0.0.0.0 --port 8000 --dbpath /data/db' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'priority=5' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'startretries=5' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'user=mongodb' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '[program:gunicorn]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=gunicorn militex.wsgi:application --bind 0.0.0.0:%(ENV_PORT)s --chdir backend --timeout 120' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'priority=20' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'startretries=10' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '[program:cron]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=cron -f' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'priority=30' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf
-
-# Create MongoDB initialization script
-RUN echo '#!/bin/bash\n\
-# MongoDB initialization script\n\
-timeout=30\n\
-counter=0\n\
-echo "Waiting for MongoDB to start..."\n\
-until mongo --eval "db.adminCommand(\"ping\")" >/dev/null 2>&1; do\n\
-  sleep 1\n\
-  counter=$((counter+1))\n\
-  if [ $counter -ge $timeout ]; then\n\
-    echo "Timed out waiting for MongoDB to start. Exiting."\n\
-    exit 1\n\
-  fi\n\
-  echo "Waiting for MongoDB... $counter/$timeout"\n\
-done\n\
-\n\
-echo "MongoDB started. Initializing..."\n\
-\n\
-# Create admin user\n\
-mongo admin --eval "db.createUser({user: \"admin\", pwd: \"admin_password\", roles: [\"root\"]})"\n\
-\n\
-# Create databases and collections\n\
-mongo admin -u admin -p admin_password --eval "db = db.getSiblingDB(\"militex_users\"); try { db.createCollection(\"users\"); print(\"Created users collection\"); } catch(e) { print(e); }"\n\
-mongo admin -u admin -p admin_password --eval "db = db.getSiblingDB(\"militex_cars\"); try { db.createCollection(\"car\"); print(\"Created car collection\"); } catch(e) { print(e); }"\n\
-\n\
-# Create indexes\n\
-mongo admin -u admin -p admin_password --eval "db = db.getSiblingDB(\"militex_cars\"); try { db.car.createIndex({ \"make\": 1 }); db.car.createIndex({ \"model\": 1 }); db.car.createIndex({ \"year\": 1 }); db.car.createIndex({ \"price\": 1 }); db.car.createIndex({ \"seller_id\": 1 }); db.car.createIndex({ \"created_at\": -1 }); print(\"Created indexes\"); } catch(e) { print(e); }"\n\
-\n\
-echo "MongoDB initialization complete."\n\
-' > /init-mongodb.sh && \
-chmod +x /init-mongodb.sh
-
-# Create entrypoint script
-RUN echo '#!/bin/bash\n\
-# Initialize MongoDB data directory if needed\n\
-mkdir -p /data/db\n\
-chown -R mongodb:mongodb /data/db\n\
-\n\
-# Export MongoDB environment variables for Django\n\
-export MONGODB_URI=mongodb://localhost:8000\n\
-export MONGODB_USERNAME=admin\n\
-export MONGODB_PASSWORD=admin_password\n\
-export MONGODB_AUTH_SOURCE=admin\n\
-\n\
-# Start supervisord\n\
-supervisord -c /etc/supervisor/conf.d/supervisord.conf &\n\
-\n\
-# Give MongoDB some time to start\n\
-sleep 5\n\
-\n\
-# Run MongoDB initialization script\n\
-/init-mongodb.sh\n\
-\n\
-# Wait for all services\n\
-wait\n\
-' > /docker-entrypoint.sh && \
-chmod +x /docker-entrypoint.sh
-
-# Collect static files
-RUN python backend/manage.py collectstatic --no-input
-
-# Expose the port
+# 9. Expose Django’s port
 EXPOSE 8000
 
-# Set the entrypoint script
-ENTRYPOINT ["/docker-entrypoint.sh"]
+# 10. Start everything under Supervisor
+CMD ["supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
