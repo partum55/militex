@@ -1,4 +1,4 @@
-# backend/militex/database_router.py
+# backend/militex/db_routers.py
 
 class DatabaseRouter:
     """
@@ -39,8 +39,9 @@ class DatabaseRouter:
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         """
         Make sure accounts models go to default database,
-        cars models go to cars_db.
+        cars models are not migrated since they use MongoDB.
         """
         if app_label == 'cars':
-            return db == 'cars_db'
+            # Don't run migrations for cars app (MongoDB)
+            return False
         return db == 'default'

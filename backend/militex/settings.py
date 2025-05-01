@@ -85,6 +85,13 @@ WSGI_APPLICATION = 'militex.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 # MongoDB configuration with Koyeb environment variables
 # MongoDB connection settings
 MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017')
@@ -92,47 +99,51 @@ MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', '')
 MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', '')
 MONGODB_AUTH_SOURCE = os.environ.get('MONGODB_AUTH_SOURCE', 'admin')
 
-# Connect to MongoDB databases
-if MONGODB_USERNAME and MONGODB_PASSWORD:
-    # Connect with authentication
-    mongoengine.connect(
-        db='militex_users',
-        host=MONGODB_URI,
-        username=MONGODB_USERNAME,
-        password=MONGODB_PASSWORD,
-        authentication_source=MONGODB_AUTH_SOURCE,
-        alias='default'
-    )
-    
-    mongoengine.connect(
-        db='militex_cars',
-        host=MONGODB_URI,
-        username=MONGODB_USERNAME,
-        password=MONGODB_PASSWORD,
-        authentication_source=MONGODB_AUTH_SOURCE,
-        alias='cars_db'
-    )
-else:
-    # Connect without authentication
-    mongoengine.connect(
-        db='militex_users',
-        host=MONGODB_URI,
-        alias='default'
-    )
-    
-    mongoengine.connect(
-        db='militex_cars',
-        host=MONGODB_URI,
-        alias='cars_db'
-    )
+# Print connection info for debugging
+print(f"MongoDB connection info: {MONGODB_URI}, user: {MONGODB_USERNAME}, auth_source: {MONGODB_AUTH_SOURCE}")
 
-# Keep the original DATABASES setting for Django's admin and authentication
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Connect to MongoDB databases
+try:
+    print(f"Connecting to MongoDB: {MONGODB_URI}")
+    if MONGODB_USERNAME and MONGODB_PASSWORD:
+        # Connect with authentication
+        print(f"Using authenticated MongoDB connection with user: {MONGODB_USERNAME}")
+        mongoengine.connect(
+            db='militex_users',
+            host=MONGODB_URI,
+            username=MONGODB_USERNAME,
+            password=MONGODB_PASSWORD,
+            authentication_source=MONGODB_AUTH_SOURCE,
+            alias='default'
+        )
+        
+        mongoengine.connect(
+            db='militex_cars',
+            host=MONGODB_URI,
+            username=MONGODB_USERNAME,
+            password=MONGODB_PASSWORD,
+            authentication_source=MONGODB_AUTH_SOURCE,
+            alias='cars_db'
+        )
+    else:
+        # Connect without authentication
+        print("Using non-authenticated MongoDB connection")
+        mongoengine.connect(
+            db='militex_users',
+            host=MONGODB_URI,
+            alias='default'
+        )
+        
+        mongoengine.connect(
+            db='militex_cars',
+            host=MONGODB_URI,
+            alias='cars_db'
+        )
+    print("MongoDB connection established successfully")
+except Exception as e:
+    print(f"MongoDB connection error: {e}")
+    print("WARNING: MongoDB connection failed but Django will continue to start")
+DATABASE_ROUTERS = ['militex.db_routers.DatabaseRouter']
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {

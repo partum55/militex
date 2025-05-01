@@ -19,16 +19,16 @@ services:
 
   django:
     build:
-      context: ./backend
+      context: .  # Changed from ./backend to . (root directory)
       dockerfile: Dockerfile
     container_name: militex-django
     command: >
-      sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+      sh -c "python backend/manage.py migrate &&
+             python backend/manage.py runserver 0.0.0.0:8000"
     volumes:
-      - ./backend:/app
-      - static-volume:/app/staticfiles
-      - media-volume:/app/media
+      - ./backend:/app/backend
+      - static-volume:/app/backend/staticfiles
+      - media-volume:/app/backend/media
     ports:
       - "8000:8000"
     environment:

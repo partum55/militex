@@ -1,42 +1,38 @@
-// mongo-init.js
+// Initialize MongoDB databases and collections
+print("Starting MongoDB initialization...");
 
-// Create databases
+// Authenticate as admin
+db.auth('admin', 'admin_password');
+
+// Create militex_users database
 db = db.getSiblingDB('militex_users');
-db.createUser({
-  user: 'django_user',
-  pwd: 'django_password',
-  roles: [
-    { role: 'readWrite', db: 'militex_users' }
-  ]
-});
+try {
+    db.createCollection('users');
+    print("Created users collection in militex_users database");
+} catch (e) {
+    print("Collection already exists or error:", e.message);
+}
 
+// Create militex_cars database
 db = db.getSiblingDB('militex_cars');
-db.createUser({
-  user: 'django_user',
-  pwd: 'django_password',
-  roles: [
-    { role: 'readWrite', db: 'militex_cars' }
-  ]
-});
+try {
+    db.createCollection('car');
+    print("Created car collection in militex_cars database");
+} catch (e) {
+    print("Collection already exists or error:", e.message);
+}
 
-// Create collections
-db.createCollection('accounts_user');
-db.createCollection('accounts_sellerrating');
+// Create indexes for better performance
+try {
+    db.car.createIndex({ "make": 1 });
+    db.car.createIndex({ "model": 1 });
+    db.car.createIndex({ "year": 1 });
+    db.car.createIndex({ "price": 1 });
+    db.car.createIndex({ "seller_id": 1 });
+    db.car.createIndex({ "created_at": -1 });
+    print("Created indexes for car collection");
+} catch (e) {
+    print("Error creating indexes:", e.message);
+}
 
-db = db.getSiblingDB('militex_cars');
-db.createCollection('cars_car');
-
-// Create indexes
-db = db.getSiblingDB('militex_users');
-db.accounts_user.createIndex({ "username": 1 }, { unique: true });
-db.accounts_user.createIndex({ "email": 1 });
-db.accounts_sellerrating.createIndex({ "seller_id": 1 });
-db.accounts_sellerrating.createIndex({ "rater_id": 1 });
-
-db = db.getSiblingDB('militex_cars');
-db.cars_car.createIndex({ "make": 1 });
-db.cars_car.createIndex({ "model": 1 });
-db.cars_car.createIndex({ "year": 1 });
-db.cars_car.createIndex({ "price": 1 });
-db.cars_car.createIndex({ "created_at": -1 });
-db.cars_car.createIndex({ "seller_id": 1 });
+print("MongoDB initialization complete");
