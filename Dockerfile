@@ -12,7 +12,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # ───────────────────────────────────────────────────────
-# 2) Python + Django stage (without MongoDB)
+# 2) Python + Django stage
 # ───────────────────────────────────────────────────────
 FROM python:3.9-slim-bullseye
 ENV \
@@ -23,13 +23,15 @@ ENV \
 
 WORKDIR /app
 
-# Install system dependencies (minimal, no MongoDB)
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates \
-    supervisor \
     curl \
     netcat \
     procps \
+    gcc \
+    python3-dev \
+    libpq-dev \
     && apt-get clean
 
 # Install Python dependencies
@@ -45,69 +47,14 @@ RUN mkdir -p backend/media/car_images && chmod -R 755 backend/media
 # Create a placeholder image
 RUN mkdir -p backend/static/images && touch backend/static/images/car-placeholder.jpg
 
-# Create log files
-RUN touch /var/log/app.log && chmod 666 /var/log/app.log
-RUN mkdir -p /var/log && touch /var/log/supervisord.log && chmod 666 /var/log/supervisord.log
-
 # Copy built React frontend
 COPY --from=frontend-build /app/frontend/build/ ./backend/frontend_build/
-
-# Create healthcheck script for web application
-RUN echo '#!/bin/bash\n\
-nc -z -w3 localhost 8000 || exit 1\n\
-' > /healthcheck.sh && chmod +x /healthcheck.sh
-
-# Create supervisor configuration inline
-RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'nodaemon=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'logfile=/var/log/supervisord.log' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'loglevel=info' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '[program:migrate]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=python backend/manage.py migrate --noinput' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'priority=10' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'startsecs=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autorestart=false' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'exitcodes=0,1,2' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '[program:gunicorn]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=gunicorn militex.wsgi:application --bind 0.0.0.0:%(ENV_PORT)s --chdir backend --timeout 300 --workers 1 --threads 4 --max-requests 1000 --max-requests-jitter 50' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'priority=20' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'startretries=10' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/supervisord.conf
-
-# Create entrypoint script
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Create log directory and file if they dont exist\n\
-mkdir -p /var/log\n\
-touch /var/log/supervisord.log\n\
-chmod 666 /var/log/supervisord.log\n\
-\n\
-echo "Starting all services with supervisord..."\n\
-# Start supervisord in foreground\n\
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n\n\
-' > /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 
 # Collect static files
 RUN python backend/manage.py collectstatic --no-input
 
-# Add Docker healthcheck for web app only
-HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 CMD /healthcheck.sh
-
-# Expose only the web app port
+# Expose port
 EXPOSE $PORT
 
-# Set the entrypoint script
-ENTRYPOINT ["/docker-entrypoint.sh"]
+# Command to run by default (can be overridden in docker-compose)
+CMD ["gunicorn", "militex.wsgi:application", "--bind", "0.0.0.0:8000", "--chdir", "backend"]

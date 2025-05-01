@@ -1,15 +1,9 @@
+from django.db import models
 from django.utils.translation import gettext_lazy as _
-import mongoengine as me
-from datetime import datetime
+from django.conf import settings
 
-# Car image embedded document
-class CarImage(me.EmbeddedDocument):
-    image_path = me.StringField(required=True)
-    is_primary = me.BooleanField(default=False)
-    uploaded_at = me.DateTimeField(default=datetime.now)
-
-# Car document in MongoDB
-class Car(me.Document):
+class Car(models.Model):
+    """Car model using standard Django ORM for PostgreSQL"""
     # Define choices as tuples for form display
     CONDITION_CHOICES = (
         ('new', _('New')),
@@ -43,50 +37,89 @@ class Car(me.Document):
         ('semi-automatic', _('Semi-Automatic')),
     )
 
-    # Seller info
-    seller_id = me.IntField(required=True)  # Reference to Django User.id
-    seller_username = me.StringField(max_length=150)
+    # Seller info - Foreign Key to Django User
+    seller = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        related_name='cars'
+    )
     
     # Car details
-    make = me.StringField(max_length=100, required=True)
-    model = me.StringField(max_length=100, required=True)
-    year = me.IntField(required=True)
-    mileage = me.IntField(required=True)
-    vehicle_type = me.StringField(max_length=100)
-    condition = me.StringField(max_length=20, choices=[c[0] for c in CONDITION_CHOICES])
-    fuel_type = me.StringField(max_length=20, choices=[c[0] for c in FUEL_CHOICES])
-    transmission = me.StringField(max_length=20, choices=[c[0] for c in TRANSMISSION_CHOICES])
-    body_type = me.StringField(max_length=20, choices=[c[0] for c in BODY_TYPE_CHOICES])
+    make = models.CharField(max_length=100, verbose_name=_('Make'))
+    model = models.CharField(max_length=100, verbose_name=_('Model'))
+    year = models.PositiveIntegerField(verbose_name=_('Year of Manufacture'))
+    mileage = models.PositiveIntegerField(verbose_name=_('Mileage'))
+    vehicle_type = models.CharField(max_length=100, verbose_name=_('Vehicle Type'))
+    condition = models.CharField(
+        max_length=20, 
+        choices=CONDITION_CHOICES,
+        verbose_name=_('Condition')
+    )
+    fuel_type = models.CharField(
+        max_length=20, 
+        choices=FUEL_CHOICES,
+        verbose_name=_('Fuel Type')
+    )
+    transmission = models.CharField(
+        max_length=20, 
+        choices=TRANSMISSION_CHOICES,
+        verbose_name=_('Transmission')
+    )
+    body_type = models.CharField(
+        max_length=20, 
+        choices=BODY_TYPE_CHOICES,
+        null=True, 
+        blank=True,
+        verbose_name=_('Body Type')
+    )
 
     # Location
-    country = me.StringField(max_length=100)
-    city = me.StringField(max_length=100)
+    country = models.CharField(max_length=100, verbose_name=_('Country'))
+    city = models.CharField(max_length=100, verbose_name=_('City/Region'))
 
     # Price details
-    price = me.DecimalField(precision=2)
-    negotiable = me.BooleanField(default=False)
+    price = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        verbose_name=_('Price')
+    )
+    negotiable = models.BooleanField(default=False, verbose_name=_('Negotiable Price'))
 
     # Engine details
-    engine_size = me.FloatField()
-    engine_power = me.IntField()
+    engine_size = models.FloatField(null=True, blank=True, verbose_name=_('Engine Size'))
+    engine_power = models.PositiveIntegerField(null=True, blank=True, verbose_name=_('Engine Power (HP)'))
 
-    # Description and photos
-    description = me.StringField()
-    created_at = me.DateTimeField(default=datetime.now)
-    updated_at = me.DateTimeField(default=datetime.now)
+    # Description and timestamps
+    description = models.TextField(blank=True, verbose_name=_('Description'))
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     # Original listing data
-    original_url = me.StringField()
-    is_imported = me.BooleanField(default=False)
+    original_url = models.URLField(null=True, blank=True, verbose_name=_('Original URL'))
+    is_imported = models.BooleanField(default=False, verbose_name=_('Is Imported'))
     
-    # Images (embedded documents)
-    images = me.EmbeddedDocumentListField(CarImage)
-    
-    # Use cars_db database
-    meta = {
-        'db_alias': 'cars_db',
-        'ordering': ['-created_at']
-    }
+    class Meta:
+        verbose_name = _('Car')
+        verbose_name_plural = _('Cars')
+        ordering = ['-created_at']
     
     def __str__(self):
         return f"{self.year} {self.make} {self.model}"
+
+
+class CarImage(models.Model):
+    """CarImage model using standard Django ORM for PostgreSQL"""
+    car = models.ForeignKey(
+        Car, 
+        on_delete=models.CASCADE,
+        related_name='images'
+    )
+    image = models.ImageField(upload_to='car_images/')
+    is_primary = models.BooleanField(default=False)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Image for {self.car.make} {self.car.model}"
+    
+    class Meta:
+        ordering = ['-is_primary', '-uploaded_at']

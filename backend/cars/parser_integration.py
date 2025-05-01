@@ -1,19 +1,19 @@
-from bson.objectid import ObjectId
 from django.conf import settings
 import requests
 from bs4 import BeautifulSoup
 import re
-import asyncio
-import tempfile
 import os
 from urllib.parse import urlparse
-from asgiref.sync import sync_to_async
 from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
-from .models import Car, CarImage
+from django.db import transaction
 import random
 import time
 import datetime
+from django.core.files.temp import NamedTemporaryFile
+
+from .models import Car, CarImage
+
 User = get_user_model()
 
 headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
@@ -396,7 +396,8 @@ def parse_car_details(url):
             "engine_size": engine_size,
             "engine_power": engine_power,
             "image_urls": image_urls,
-            "source_url": url
+            "original_url": url,
+            "is_imported": True
         }
     except Exception as e:
         print(f"Error parsing car details from {url}: {e}")
@@ -404,93 +405,39 @@ def parse_car_details(url):
         traceback.print_exc()
         return None
 
-async def download_image(url):
-    """Download image from URL and return as ContentFile"""
+def download_image(url):
+    """Download image from URL and create a ContentFile"""
     try:
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
+        
         # Get file extension from URL
         parsed_url = urlparse(url)
         path = parsed_url.path
         ext = os.path.splitext(path)[1].lower()
         if not ext or ext not in ['.jpg', '.jpeg', '.png', '.webp']:
             ext = '.jpg'  # Default to .jpg if no extension is found
+        
+        # Create a unique filename
+        from django.utils import timezone
+        filename = f"{timezone.now().strftime('%Y%m%d%H%M%S')}{ext}"
+        
         # Create a ContentFile with the image data
-        content_file = ContentFile(response.content, name=f"car_image{ext}")
+        content_file = ContentFile(response.content, name=filename)
         return content_file
     except Exception as e:
         print(f"Error downloading image from {url}: {e}")
         return None
 
-async def import_cars_from_autoria(limit=100, admin_user_id=1):
-    """Import cars from auto.ria.com and save to the database"""
-    links = get_suv_links(limit=limit)
-    imported_count = 0
-
-    # Get admin user to set as the seller
-    user = await sync_to_async(User.objects.get)(id=admin_user_id)
-    
-    for link in links:
-        car_data = parse_car_details(link)
-        if not car_data:
-            continue
-            
-        # Check if car with same make, model and year already exists
-        existing_car = await sync_to_async(lambda: Car.objects.filter(
-            make=car_data["make"],
-            model=car_data["model"],
-            year=car_data["year"],
-            mileage=car_data["mileage"]
-        ).first())()
-        
-        if existing_car:
-            print(f"[SKIP] Car already exists: {car_data['make']} {car_data['model']} ({car_data['year']})")
-            continue
-
-        # Create new car
-        image_urls = car_data.pop("image_urls", [])
-        source_url = car_data.pop("source_url", "")
-        car = await sync_to_async(lambda: Car.objects.using('cars_db').create(
-            seller=user,
-            **car_data
-        ))()
-        # Download and create car images
-        for i, img_url in enumerate(image_urls):
-            try:
-                image_file = await download_image(img_url)
-                if image_file:
-                    await sync_to_async(lambda: CarImage.objects.using('cars_db').create(
-                        car=car,
-                        image=image_file,
-                        is_primary=(i == 0)
-                    ))()
-            except Exception as e:
-                print(f"Error saving image {img_url}: {e}")
-        
-        imported_count += 1
-        print(f"[✓] Imported: {car_data['make']} {car_data['model']} ({car_data['year']}) | ${car_data['price']}")
-    
-    return imported_count
-
+@transaction.atomic
 def import_cars_sync(limit=100, admin_user_id=1):
-    """Synchronous wrapper for import_cars_from_autoria modified for MongoDB"""
-    print(f"Starting import_cars_sync with limit={limit}, admin_user_id={admin_user_id}")
+    """Import cars from auto.ria.com and save to the PostgreSQL database"""
     try:
-        # Check if admin user exists
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
+        print(f"Starting import_cars_sync with limit={limit}, admin_user_id={admin_user_id}")
         
+        # Check if admin user exists
         try:
-            # Convert string ID to ObjectId if needed
-            if not isinstance(admin_user_id, ObjectId) and isinstance(admin_user_id, str):
-                try:
-                    obj_id = ObjectId(admin_user_id)
-                    admin_user = User.objects.get(_id=obj_id)
-                except:
-                    admin_user = User.objects.get(id=admin_user_id)
-            else:
-                admin_user = User.objects.get(id=admin_user_id)
-            
+            admin_user = User.objects.get(id=admin_user_id)
             print(f"Using admin user: {admin_user.username} (ID: {admin_user.id})")
         except User.DoesNotExist:
             print(f"Admin user with ID {admin_user_id} not found, creating default admin")
@@ -504,7 +451,6 @@ def import_cars_sync(limit=100, admin_user_id=1):
             print(f"Created or found admin user with ID: {admin_user_id}")
         
         # Check if we already have cars
-        from cars.models import Car
         existing_count = Car.objects.count()
         if existing_count > 0:
             print(f"Database already has {existing_count} cars")
@@ -536,81 +482,33 @@ def import_cars_sync(limit=100, admin_user_id=1):
                 print(f"[SKIP] Car already exists: {car_data['make']} {car_data['model']} ({car_data['year']})")
                 continue
             
-            # Extract image URLs and source URL
+            # Extract image URLs
             image_urls = car_data.pop("image_urls", [])
-            source_url = car_data.pop("source_url", "")
             
-            # Set seller info for MongoDB
-            car_data["seller_id"] = str(admin_user.id) 
-            car_data["seller_username"] = admin_user.username
+            # Create car
+            car = Car.objects.create(
+                seller=admin_user,
+                **car_data
+            )
             
-            # Create car document with empty images array
-            car_data["images"] = []
-            
-            # Create car in MongoDB
-            car = Car.objects.create(**car_data)
-            
-            images = []
+            # Process images
             for i, img_url in enumerate(image_urls):
                 try:
-                    # Download image
-                    response = requests.get(img_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
-                    response.raise_for_status()
-                    
-                    # Generate filename and path
-                    from datetime import datetime
-                    import os
-                    
-                    # Create a unique filename with timestamp and ObjectId
-                    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-                    filename = f"{timestamp}_{str(ObjectId())}.jpg"
-                    
-                    # Store relative path without leading slash
-                    image_path = f"car_images/{filename}"
-                    
-                    # Save file to disk
-                    save_path = os.path.join(settings.MEDIA_ROOT, 'car_images')
-                    os.makedirs(save_path, exist_ok=True)
-                    
-                    full_path = os.path.join(save_path, filename)
-                    
-                    # Debug output
-                    print(f"Saving image to: {full_path}")
-                    print(f"Image URL was: {img_url}")
-                    
-                    with open(full_path, 'wb') as f:
-                        f.write(response.content)
-                    
-                    # Debug: verify file exists and size is non-zero
-                    if os.path.exists(full_path):
-                        file_size = os.path.getsize(full_path)
-                        print(f"✓ Saved file {filename}, size: {file_size} bytes")
-                    else:
-                        print(f"❌ Failed to save file {filename}")
-                        continue
-                        
-                    # Add to images array - important: don't add leading slash!
-                    car_image = CarImage(
-                        image_path=image_path,  
-                        is_primary=(i == 0)
-                    )
-                    images.append(car_image)
-                    
+                    # Download and create image
+                    img_content = download_image(img_url)
+                    if img_content:
+                        CarImage.objects.create(
+                            car=car,
+                            image=img_content,
+                            is_primary=(i == 0)  # First image is primary
+                        )
                 except Exception as e:
-                    print(f"Error saving image {img_url}: {e}")
-                    import traceback
-                    traceback.print_exc()
-            print(images)
-            # Update car with images
-            if images:
-                car.images = images
-                car.save()
+                    print(f"Error processing image {img_url}: {e}")
             
             imported_count += 1
             print(f"[✓] Imported: {car_data['make']} {car_data['model']} ({car_data['year']}) | ${car_data['price']}")
         
         return imported_count
-        
     except Exception as e:
         print(f"Error during import: {e}")
         import traceback

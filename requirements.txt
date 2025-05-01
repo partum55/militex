@@ -2,25 +2,23 @@
 setuptools==67.8.0  
 wheel==0.40.0 
 Django==4.2.11
-asgiref==3.7.2  # Downgraded to stable version compatible with Django 4.2
-sqlparse==0.4.4  # Downgraded for djongo compatibility
+asgiref==3.7.2
+sqlparse==0.4.4
 
 # REST Framework
-djangorestframework==3.14.0  # Adjusted for Django 2.1 compatibility
-djangorestframework-simplejwt==5.2.2  # Adjusted for Django 2.1 compatibility
+djangorestframework==3.14.0
+djangorestframework-simplejwt==5.2.2
 
 # Database
-mongoengine==0.27.0
-pymongo[srv]==3.12.3  # Add SRV support for MongoDB Atlas
-dnspython==2.3.0
-certifi==2023.11.17  # Required for SSL verification
+psycopg2-binary==2.9.9  # PostgreSQL adapter
+dj-database-url==2.1.0
 
 # Utilities
-dj-database-url==2.1.0  # Downgraded for compatibility
-django-cors-headers==4.3.0  # Adjusted for Django 2.1 compatibility
-django-extensions==3.2.3  # Adjusted for Django 2.1 compatibility
-django-filter==23.5  # Adjusted for Django 2.1 compatibility
-whitenoise==6.5.0  # Adjusted for compatibility
+django-cors-headers==4.3.0
+django-extensions==3.2.3
+django-filter==23.5
+whitenoise==6.5.0
+
 # Deployment
 gunicorn==21.2.0
 
@@ -29,7 +27,7 @@ beautifulsoup4==4.12.2
 soupsieve==2.5
 bs4==0.0.2
 requests==2.31.0
-urllib3==2.0.7  # Downgraded for compatibility with requests
+urllib3==2.0.7
 certifi==2023.11.17
 charset-normalizer==3.3.2
 idna==3.4

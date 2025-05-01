@@ -22,8 +22,10 @@ services:
         value: "militex.settings"
       - name: DEBUG
         value: "False"
-      - name: MONGODB_URI
-    value: "mongodb+srv://militex:militex-test-mongo@cluster0.rpfehqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&tlsAllowInvalidCertificates=true"
+      - name: DATABASE_URL
+        value: "postgres://postgres:postgres@localhost:5432/militex"
+      - name: SECRET_KEY
+        value: "your-secret-key-for-production"
     resources:
       cpu: 1000m
       memory: 2048Mi  # Increased memory allocation

@@ -1,14 +1,11 @@
 """
 Django settings for militex project.
 """
-import mongoengine
 import os
 import dj_database_url
 from pathlib import Path
 from datetime import timedelta
-from django.core.management.utils import get_random_secret_key
 import mimetypes
-import ssl
 
 mimetypes.add_type("text/javascript", ".js", True)
 mimetypes.add_type("text/css", ".css", True)
@@ -21,12 +18,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'cronenburg-123890')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
-# DEBUG = False
 
 FORCE_SERVE_MEDIA = True
-ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost','militex-test.koyeb.app']
-
-# ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost', 'militex-test.koyeb.app']
 
 # Application definition
 INSTALLED_APPS = [
@@ -84,60 +78,22 @@ WSGI_APPLICATION = 'militex.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
+# Default SQLite database for local development without PostgreSQL
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-# MongoDB configuration with Koyeb environment variables
-# MongoDB configuration with MongoDB Atlas
-# MongoDB connection settings
-# In settings.py
-MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb+srv://militex:militex-test-mongo@cluster0.rpfehqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&ssl=true&tlsAllowInvalidCertificates=true')
-MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', '')
-MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', '')
-MONGODB_AUTH_SOURCE = os.environ.get('MONGODB_AUTH_SOURCE', 'admin')
 
-# Print connection info for debugging
-print(f"MongoDB connection info: {MONGODB_URI}, user: {MONGODB_USERNAME}, auth_source: {MONGODB_AUTH_SOURCE}")
-
-# Connect to MongoDB databases
-try:
-    print(f"Connecting to MongoDB: {MONGODB_URI}")
-    
-    # Connect to militex_users database with simplified parameters
-    mongoengine.connect(
-        db='militex_users',
-        host=MONGODB_URI,
-        alias='default',
-        connectTimeoutMS=30000,
-        socketTimeoutMS=60000,
-        serverSelectionTimeoutMS=30000
+# Use PostgreSQL if DATABASE_URL is set (for Docker and production)
+if 'DATABASE_URL' in os.environ:
+    DATABASES['default'] = dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600
     )
 
-    # Connect to militex_cars database with simplified parameters
-    mongoengine.connect(
-        db='militex_cars',
-        host=MONGODB_URI,
-        alias='cars_db',
-        connectTimeoutMS=30000,
-        socketTimeoutMS=60000,
-        serverSelectionTimeoutMS=30000
-    )
-    
-    print("MongoDB connection established successfully")
-except Exception as e:
-    print(f"MongoDB connection error: {e}")
-    print("WARNING: MongoDB connection failed but Django will continue to start")
-DATABASE_ROUTERS = ['militex.db_routers.DatabaseRouter']
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -204,6 +160,8 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
@@ -260,9 +218,9 @@ if not DEBUG:
     # Add correct trusted origins for CSRF
     CSRF_TRUSTED_ORIGINS = [
         'https://militex.koyeb.app',
-        'https://militex-test.koyeb.app'
+        'https://militex-test.koyeb.app',
         'http://militex.koyeb.app',
-        'http://militex-test.koyeb.app'
+        'http://militex-test.koyeb.app',
         'https://*.koyeb.app', 
         'http://*.koyeb.app'
     ]

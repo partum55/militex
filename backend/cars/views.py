@@ -2,20 +2,21 @@ from rest_framework import viewsets, filters, status, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db import transaction
-import json
-from bson.objectid import ObjectId
-
-from cars.models import Car, CarImage
-from cars.serializers import CarSerializer
-from cars.filters import MongoDBFilterBackend  # Updated import
-from cars.parser_integration import import_cars_sync
 from django.conf import settings
+import os
+
+# Import DjangoFilterBackend from the correct package
+from django_filters.rest_framework import DjangoFilterBackend
+
+from .models import Car, CarImage
+from .serializers import CarSerializer
+from .parser_integration import import_cars_sync
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return str(obj.seller_id) == str(request.user.id)
+        return obj.seller == request.user
 
 class IsAdminUser(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -24,14 +25,65 @@ class IsAdminUser(permissions.BasePermission):
 class CarViewSet(viewsets.ModelViewSet):
     serializer_class = CarSerializer
     permission_classes = [permissions.AllowAny]
-    filter_backends = [MongoDBFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # Updated backend
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['make', 'model', 'year', 'fuel_type', 'transmission', 
+                       'body_type', 'condition', 'country', 'city', 'vehicle_type']
     search_fields = ['make', 'model', 'description']
     ordering_fields = ['price', 'year', 'mileage', 'created_at']
     ordering = ['-created_at']
     
     def get_queryset(self):
-        # For MongoEngine, we use .objects instead of .objects.all()
-        return Car.objects
+        queryset = Car.objects.all().prefetch_related('images')
+        
+        # Filter by price range
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+        
+        if min_price:
+            try:
+                queryset = queryset.filter(price__gte=float(min_price))
+            except ValueError:
+                pass
+                
+        if max_price:
+            try:
+                queryset = queryset.filter(price__lte=float(max_price))
+            except ValueError:
+                pass
+        
+        # Filter by year range
+        min_year = self.request.query_params.get('min_year')
+        max_year = self.request.query_params.get('max_year')
+        
+        if min_year:
+            try:
+                queryset = queryset.filter(year__gte=int(min_year))
+            except ValueError:
+                pass
+                
+        if max_year:
+            try:
+                queryset = queryset.filter(year__lte=int(max_year))
+            except ValueError:
+                pass
+        
+        # Filter by mileage range
+        min_mileage = self.request.query_params.get('min_mileage')
+        max_mileage = self.request.query_params.get('max_mileage')
+        
+        if min_mileage:
+            try:
+                queryset = queryset.filter(mileage__gte=int(min_mileage))
+            except ValueError:
+                pass
+                
+        if max_mileage:
+            try:
+                queryset = queryset.filter(mileage__lte=int(max_mileage))
+            except ValueError:
+                pass
+        
+        return queryset
     
     def get_permissions(self):
         """
@@ -52,12 +104,12 @@ class CarViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def perform_create(self, serializer):
-        serializer.save(seller_id=self.request.user.id, seller_username=self.request.user.username)
+        serializer.save(seller=self.request.user)
 
     @action(detail=False, methods=['get'])
     def my_listings(self, request):
         """Get the current user's car listings"""
-        queryset = Car.objects(seller_id=str(request.user.id))
+        queryset = Car.objects.filter(seller=request.user).prefetch_related('images')
         page = self.paginate_queryset(queryset)
 
         if page is not None:
@@ -83,7 +135,7 @@ class CarViewSet(viewsets.ModelViewSet):
         car = self.get_object()
         
         # Check permissions
-        if str(car.seller_id) != str(request.user.id) and not request.user.is_staff:
+        if car.seller != request.user and not request.user.is_staff:
             return Response({'status': 'error', 'message': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
         
         # Process uploaded images
@@ -94,32 +146,14 @@ class CarViewSet(viewsets.ModelViewSet):
         # Add images to car
         for i, image_file in enumerate(images):
             try:
-                # Generate filename and path
-                from datetime import datetime
-                import os
-                
-                filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{image_file.name}"
-                image_path = f"car_images/{filename}"
-                
-                # Save file to disk
-                import os
-                save_path = os.path.join(settings.MEDIA_ROOT, 'car_images')
-                os.makedirs(save_path, exist_ok=True)
-                
-                full_path = os.path.join(save_path, filename)
-                with open(full_path, 'wb+') as destination:
-                    for chunk in image_file.chunks():
-                        destination.write(chunk)
-                
-                # Add to car's images array
-                car.images.append(CarImage(
-                    image_path=image_path,
-                    is_primary=len(car.images) == 0  # Primary if it's the first image
-                ))
+                CarImage.objects.create(
+                    car=car,
+                    image=image_file,
+                    is_primary=not car.images.exists() and i == 0  # Primary only if first image and no existing images
+                )
             except Exception as e:
                 return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
-        car.save()
         serializer = self.get_serializer(car)
         return Response(serializer.data)
     
@@ -129,7 +163,7 @@ class CarViewSet(viewsets.ModelViewSet):
         car = self.get_object()
         
         # Check permissions
-        if str(car.seller_id) != str(request.user.id) and not request.user.is_staff:
+        if car.seller != request.user and not request.user.is_staff:
             return Response({'status': 'error', 'message': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
         
         # Get image id from request
@@ -138,37 +172,28 @@ class CarViewSet(viewsets.ModelViewSet):
             return Response({'status': 'error', 'message': 'No image_id provided'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Find and remove the image
-        found = False
-        was_primary = False
-        new_images = []
-        
-        for img in car.images:
-            if str(img._id) == image_id:
-                found = True
-                was_primary = img.is_primary
-                # Delete the file
-                try:
-                    import os
-                    file_path = os.path.join(settings.MEDIA_ROOT, img.image_path)
-                    if os.path.exists(file_path):
-                        os.remove(file_path)
-                except Exception:
-                    pass  # Continue even if file deletion fails
-            else:
-                new_images.append(img)
-        
-        if not found:
+        try:
+            image = CarImage.objects.get(id=image_id, car=car)
+            was_primary = image.is_primary
+            
+            # Delete the image file
+            if image.image and os.path.exists(image.image.path):
+                os.remove(image.image.path)
+                
+            image.delete()
+            
+            # If the deleted image was primary, set a new primary image
+            if was_primary:
+                first_image = car.images.first()
+                if first_image:
+                    first_image.is_primary = True
+                    first_image.save()
+            
+            serializer = self.get_serializer(car)
+            return Response(serializer.data)
+            
+        except CarImage.DoesNotExist:
             return Response({'status': 'error', 'message': 'Image not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-        # Set a new primary image if the deleted one was primary
-        if was_primary and new_images:
-            new_images[0].is_primary = True
-        
-        car.images = new_images
-        car.save()
-        
-        serializer = self.get_serializer(car)
-        return Response(serializer.data)
     
     @action(detail=True, methods=['post'])
     def set_primary_image(self, request, pk=None):
@@ -176,7 +201,7 @@ class CarViewSet(viewsets.ModelViewSet):
         car = self.get_object()
         
         # Check permissions
-        if str(car.seller_id) != str(request.user.id) and not request.user.is_staff:
+        if car.seller != request.user and not request.user.is_staff:
             return Response({'status': 'error', 'message': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
         
         # Get image id from request
@@ -185,17 +210,17 @@ class CarViewSet(viewsets.ModelViewSet):
             return Response({'status': 'error', 'message': 'No image_id provided'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Find the image and set it as primary
-        found = False
-        for img in car.images:
-            if str(img._id) == image_id:
-                img.is_primary = True
-                found = True
-            else:
-                img.is_primary = False
-        
-        if not found:
+        try:
+            # First, set all images as non-primary
+            car.images.update(is_primary=False)
+            
+            # Then set the requested image as primary
+            image = CarImage.objects.get(id=image_id, car=car)
+            image.is_primary = True
+            image.save()
+            
+            serializer = self.get_serializer(car)
+            return Response(serializer.data)
+            
+        except CarImage.DoesNotExist:
             return Response({'status': 'error', 'message': 'Image not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-        car.save()
-        serializer = self.get_serializer(car)
-        return Response(serializer.data)
