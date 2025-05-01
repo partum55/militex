@@ -14,7 +14,7 @@ RUN npm run build
 # ───────────────────────────────────────────────────────
 # 2) Build Django + MongoDB image
 # ───────────────────────────────────────────────────────
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 # 1. Set working directory
 WORKDIR /app/backend
@@ -33,7 +33,7 @@ RUN apt-get update \
 COPY --from=frontend /app/frontend/build ../frontend_build
 
 # 5. Install Python deps
-COPY backend/requirements.txt ./
+COPY requirements.txt ./
 RUN pip install --upgrade pip \
  && pip install -r requirements.txt
 
