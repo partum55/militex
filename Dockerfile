@@ -215,6 +215,7 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 CMD /heal
 
 # Expose only the web app port
 EXPOSE $PORT
+EXPOSE 27017
 
 # Set the entrypoint script
 ENTRYPOINT ["/docker-entrypoint.sh"]
