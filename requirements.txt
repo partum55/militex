@@ -10,9 +10,7 @@ djangorestframework==3.14.0  # Adjusted for Django 2.1 compatibility
 djangorestframework-simplejwt==5.2.2  # Adjusted for Django 2.1 compatibility
 
 # Database
-mongoengine==0.27.0
-pymongo==3.12.3
-dnspython==2.3.0
+psycopg2-binary==2.9.9
 
 # Utilities
 dj-database-url==2.1.0  # Downgraded for compatibility

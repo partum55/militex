@@ -81,73 +81,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'militex.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
+# Database configuration
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'koyebdb',
+        'USER': 'koyeb-adm',
+        'PASSWORD': 'npg_QRJc0t7HBSNq',
+        'HOST': 'ep-small-sunset-a2woub0s.eu-central-1.pg.koyeb.app',
+        'OPTIONS': {'sslmode': 'require'},
     }
 }
-# MongoDB configuration with Koyeb environment variables
-# MongoDB connection settings
-MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017')
-MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', '')
-MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', '')
-MONGODB_AUTH_SOURCE = os.environ.get('MONGODB_AUTH_SOURCE', 'admin')
 
-# Print connection info for debugging
-print(f"MongoDB connection info: {MONGODB_URI}, user: {MONGODB_USERNAME}, auth_source: {MONGODB_AUTH_SOURCE}")
-
-# Connect to MongoDB databases
-try:
-    print(f"Connecting to MongoDB: {MONGODB_URI}")
-    if MONGODB_USERNAME and MONGODB_PASSWORD:
-        # Connect with authentication
-        print(f"Using authenticated MongoDB connection with user: {MONGODB_USERNAME}")
-        mongoengine.connect(
-            db='militex_users',
-            host=MONGODB_URI,
-            username=MONGODB_USERNAME,
-            password=MONGODB_PASSWORD,
-            authentication_source=MONGODB_AUTH_SOURCE,
-            alias='default'
-        )
-        
-        mongoengine.connect(
-            db='militex_cars',
-            host=MONGODB_URI,
-            username=MONGODB_USERNAME,
-            password=MONGODB_PASSWORD,
-            authentication_source=MONGODB_AUTH_SOURCE,
-            alias='cars_db'
-        )
-    else:
-        # Connect without authentication
-        print("Using non-authenticated MongoDB connection")
-        mongoengine.connect(
-            db='militex_users',
-            host=MONGODB_URI,
-            alias='default'
-        )
-        
-        mongoengine.connect(
-            db='militex_cars',
-            host=MONGODB_URI,
-            alias='cars_db'
-        )
-    print("MongoDB connection established successfully")
-except Exception as e:
-    print(f"MongoDB connection error: {e}")
-    print("WARNING: MongoDB connection failed but Django will continue to start")
-DATABASE_ROUTERS = ['militex.db_routers.DatabaseRouter']
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -262,21 +207,21 @@ CORS_ALLOW_HEADERS = [
 if not DEBUG:
     # Disable forced SSL redirect to prevent redirect loops
     SECURE_SSL_REDIRECT = False
-    
+
     # Make sure cookie settings are compatible with both HTTP and HTTPS
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
-    
+
     # Add correct trusted origins for CSRF
     CSRF_TRUSTED_ORIGINS = [
         'https://militex.koyeb.app',
-        'https://militex-test.koyeb.app'
+        'https://militex-test.koyeb.app',
         'http://militex.koyeb.app',
-        'http://militex-test.koyeb.app'
-        'https://*.koyeb.app', 
+        'http://militex-test.koyeb.app',
+        'https://*.koyeb.app',
         'http://*.koyeb.app'
     ]
-    
+
     # Other security settings can remain unchanged
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -289,7 +234,7 @@ if DEBUG or FORCE_SERVE_MEDIA:
     # Override any production settings for media
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    
+
     # Make sure directory exists
     os.makedirs(MEDIA_ROOT, exist_ok=True)
     os.makedirs(os.path.join(MEDIA_ROOT, 'car_images'), exist_ok=True)
