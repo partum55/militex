@@ -1,0 +1,38 @@
+name: militex-car-marketplace
+services:
+  - name: web
+    instance_type: small
+    ports:
+      - port: 8000 
+        protocol: http
+    healthcheck:
+      port: 8000
+      path: /admin/login/
+      http_response_code: 200
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    routes:
+      - path: /
+        port: 8000
+    env:
+      - name: PORT
+        value: "8000"
+      - name: DJANGO_SETTINGS_MODULE
+        value: "militex.settings"
+      - name: DEBUG
+        value: "False"
+      - name: DATABASE_URL
+        value: "postgres://koyeb-adm:npg_hPW1B6vbqoLI@ep-twilight-paper-a21put3g.eu-central-1.pg.koyeb.app/koyebdb"
+      - name: SECRET_KEY
+        value: "django-insecure-1s7v6#8ky3d$f@^jpwzn2q9!+m4_u8egl5xh%jc0=w3p_&t+cx"
+      - name: ALLOWED_HOSTS
+        value: "*.koyeb.app,militex.koyeb.app"
+    resources:
+      cpu: 1000m
+      memory: 2048Mi
+    scaling:
+      min: 1
+      max: 1
+    build:
+      from: .

@@ -15,10 +15,6 @@ def run():
     try:
         print("Starting car data import process...")
         
-        # Delete existing cars if needed
-        Car.objects().delete()
-        print("Deleted existing cars")
-        
         # Create admin user if needed
         User = get_user_model()
         admin_user, created = User.objects.get_or_create(
@@ -37,17 +33,26 @@ def run():
         else:
             print("Using existing admin user for import")
 
+        # Check current car count
+        current_count = Car.objects.count()
+        print(f"Current car count: {current_count}")
+        
+        # Skip import if we already have more than 20 cars
+        if current_count >= 20:
+            print("Already have 20+ cars in the database, skipping import")
+            return
+        
         # Run the import process
         print("Importing from Auto.ria...")
-        count = import_cars_sync(50, admin_user_id=admin_user.id)
+        count = import_cars_sync(5, admin_user_id=admin_user.id)
         print(f"Imported {count} cars from Auto.ria")
         
         # Verify import
-        total_count = Car.objects().count()
+        total_count = Car.objects.count()
         print(f"Total cars in database: {total_count}")
         
         print("Data import completed!")
-        print("✔ CRON Import script executed successfully at:", datetime.datetime.now())
+        print("✔ Import script executed successfully at:", datetime.datetime.now())
             
     except Exception as e:
         print(f"Error during import: {e}")

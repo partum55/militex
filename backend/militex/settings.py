@@ -1,12 +1,10 @@
 """
 Django settings for militex project.
 """
-import mongoengine
 import os
 import dj_database_url
 from pathlib import Path
 from datetime import timedelta
-from django.core.management.utils import get_random_secret_key
 import mimetypes
 
 mimetypes.add_type("text/javascript", ".js", True)
@@ -16,16 +14,13 @@ mimetypes.add_type("text/css", ".css", True)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'cronenburg-123890')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-1s7v6#8ky3d$f@^jpwzn2q9!+m4_u8egl5xh%jc0=w3p_&t+cx')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
-# DEBUG = False
 
 FORCE_SERVE_MEDIA = True
-ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost','militex-test.koyeb.app']
-
-# ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'militex.koyeb.app,*.koyeb.app,localhost,127.0.0.1').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -82,17 +77,38 @@ TEMPLATES = [
 WSGI_APPLICATION = 'militex.wsgi.application'
 
 # Database configuration
+# Use SQLite by default, but prefer PostgreSQL configuration from environment
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'koyebdb',
-        'USER': 'koyeb-adm',
-        'PASSWORD': 'npg_QRJc0t7HBSNq',
-        'HOST': 'ep-small-sunset-a2woub0s.eu-central-1.pg.koyeb.app',
-        'OPTIONS': {'sslmode': 'require'},
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
+# Use PostgreSQL if DATABASE_URL is set (for Koyeb and production)
+if 'DATABASE_URL' in os.environ:
+    # Parse the database URL
+    db_config = dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+    )
+    
+    # Update the engine to django.db.backends.postgresql
+    # This is important for psycopg vs psycopg2 compatibility
+    db_config['ENGINE'] = 'django.db.backends.postgresql'
+    
+    # Set the database config
+    DATABASES['default'] = db_config
+# Fallback to hardcoded values if needed for testing
+elif not DEBUG:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'koyebdb',
+        'USER': 'koyeb-adm',
+        'PASSWORD': 'npg_hPW1B6vbqoLI',
+        'HOST': 'ep-twilight-paper-a21put3g.eu-central-1.pg.koyeb.app',
+        'PORT': '5432',
+    }
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -130,14 +146,12 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
-    os.path.join(BASE_DIR, 'frontend_build', 'static'),  # Point directly to frontend static folder
+    os.path.join(BASE_DIR, 'frontend_build', 'static'),
 ]
 
-# Make sure WhiteNoise can find the files
+# WhiteNoise settings for static files in production
 WHITENOISE_ROOT = os.path.join(BASE_DIR, 'frontend_build')
-
-# Change to standard WhiteNoise storage since custom one might have issues
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (User uploaded files)
 MEDIA_URL = '/media/'
@@ -159,6 +173,8 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
@@ -171,14 +187,27 @@ SIMPLE_JWT = {
 }
 
 # CSRF and CORS settings
-CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False') == 'True'
+CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_HTTPONLY = False  # Keep False to allow JS access
-CSRF_COOKIE_SAMESITE = os.environ.get('CSRF_COOKIE_SAMESITE', 'Lax')
-CSRF_TRUSTED_ORIGINS = ['https://militex.koyeb.app', 'http://militex.koyeb.app', 'https://127.0.0.1:8000', 'https://localhost:8000', 'https://militex-test.koyeb.app']
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = [
+    'https://militex.koyeb.app', 
+    'https://*.koyeb.app',
+]
 
 # CORS settings
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = ['https://militex.koyeb.app', 'http://militex.koyeb.app', 'https://127.0.0.1:8000', 'https://localhost:8000', 'https://militex-test.koyeb.app']
+CORS_ALLOWED_ORIGINS = [
+    'https://militex.koyeb.app',
+    'https://*.koyeb.app',
+]
+if DEBUG:
+    CORS_ALLOWED_ORIGINS.extend([
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+    ])
 
 # Allow specific HTTP methods
 CORS_ALLOW_METHODS = [
@@ -205,24 +234,14 @@ CORS_ALLOW_HEADERS = [
 
 # Security settings for production
 if not DEBUG:
-    # Disable forced SSL redirect to prevent redirect loops
-    SECURE_SSL_REDIRECT = False
-
-    # Make sure cookie settings are compatible with both HTTP and HTTPS
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-
-    # Add correct trusted origins for CSRF
-    CSRF_TRUSTED_ORIGINS = [
-        'https://militex.koyeb.app',
-        'https://militex-test.koyeb.app',
-        'http://militex.koyeb.app',
-        'http://militex-test.koyeb.app',
-        'https://*.koyeb.app',
-        'http://*.koyeb.app'
-    ]
-
-    # Other security settings can remain unchanged
+    # We'll enable HTTPS-related settings for Koyeb
+    SECURE_SSL_REDIRECT = True
+    
+    # Cookie settings for HTTPS
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Other security settings
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_SECONDS = 31536000  # 1 year
@@ -230,11 +249,12 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     X_FRAME_OPTIONS = 'DENY'
 
+# Ensure media serving in all environments
 if DEBUG or FORCE_SERVE_MEDIA:
-    # Override any production settings for media
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
+    
     # Make sure directory exists
     os.makedirs(MEDIA_ROOT, exist_ok=True)
     os.makedirs(os.path.join(MEDIA_ROOT, 'car_images'), exist_ok=True)
+    os.makedirs(os.path.join(MEDIA_ROOT, 'fundraiser_images'), exist_ok=True)

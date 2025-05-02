@@ -2,7 +2,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
-from bson.objectid import ObjectId
 
 User = get_user_model()
 
@@ -60,7 +59,7 @@ def get_user_profile(user_id):
     Get a user's profile data
     
     Args:
-        user_id (str): ID of the user to retrieve
+        user_id (int): ID of the user to retrieve
         
     Returns:
         User: The user instance if found
@@ -69,13 +68,7 @@ def get_user_profile(user_id):
         ValidationError: If the user doesn't exist
     """
     try:
-        # For MongoDB, we use _id field with ObjectId
-        try:
-            obj_id = ObjectId(user_id)
-        except:
-            raise ValidationError("Invalid user ID format")
-            
-        user = User.objects.get(_id=obj_id)
+        user = User.objects.get(id=user_id)
         return user
     except User.DoesNotExist:
         raise ValidationError("User not found")
@@ -150,19 +143,13 @@ def delete_user(user_id):
     Delete a user account
     
     Args:
-        user_id (str): ID of the user to delete
+        user_id (int): ID of the user to delete
         
     Raises:
         ValidationError: If the user doesn't exist
     """
     try:
-        # For MongoDB, convert string ID to ObjectId
-        try:
-            obj_id = ObjectId(user_id)
-        except:
-            raise ValidationError("Invalid user ID format")
-            
-        user = User.objects.get(_id=obj_id)
+        user = User.objects.get(id=user_id)
         user.delete()
     except User.DoesNotExist:
         raise ValidationError("User not found")
@@ -204,12 +191,6 @@ def get_users_by_criteria(criteria=None, is_military=None, is_verified=None):
     queryset = User.objects.all()
     
     if criteria:
-        # Convert any id field in criteria to _id for MongoDB
-        if 'id' in criteria:
-            try:
-                criteria['_id'] = ObjectId(criteria.pop('id'))
-            except:
-                pass
         queryset = queryset.filter(**criteria)
     
     if is_military is not None:
