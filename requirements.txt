@@ -10,7 +10,8 @@ djangorestframework==3.14.0
 djangorestframework-simplejwt==5.2.2
 
 # Database
-psycopg2-binary==2.9.9
+# Replace psycopg2-binary with psycopg which has better Python 3.13 compatibility
+psycopg==3.1.10
 dj-database-url==2.1.0
 
 # Utilities

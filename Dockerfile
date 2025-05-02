@@ -12,9 +12,9 @@ COPY frontend/ ./
 RUN npm run build
 
 # ───────────────────────────────────────────────────────
-# 2) Python + Django stage
+# 2) Python + Django stage - use Python 3.11 for better compatibility
 # ───────────────────────────────────────────────────────
-FROM python:3.9-slim-bullseye
+FROM python:3.11-slim-bullseye
 ENV \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

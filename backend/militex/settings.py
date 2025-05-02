@@ -77,7 +77,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'militex.wsgi.application'
 
 # Database configuration
-# Default configuration - will be overridden by DATABASE_URL if provided
+# Use SQLite by default, but prefer PostgreSQL configuration from environment
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -87,11 +87,18 @@ DATABASES = {
 
 # Use PostgreSQL if DATABASE_URL is set (for Koyeb and production)
 if 'DATABASE_URL' in os.environ:
-    DATABASES['default'] = dj_database_url.config(
+    # Parse the database URL
+    db_config = dj_database_url.config(
         default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
-        ssl_require=True  # Enable SSL for secure connections
     )
+    
+    # Update the engine to django.db.backends.postgresql
+    # This is important for psycopg vs psycopg2 compatibility
+    db_config['ENGINE'] = 'django.db.backends.postgresql'
+    
+    # Set the database config
+    DATABASES['default'] = db_config
 # Fallback to hardcoded values if needed for testing
 elif not DEBUG:
     DATABASES['default'] = {
@@ -101,11 +108,7 @@ elif not DEBUG:
         'PASSWORD': 'npg_hPW1B6vbqoLI',
         'HOST': 'ep-twilight-paper-a21put3g.eu-central-1.pg.koyeb.app',
         'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require',
-        }
     }
-
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
