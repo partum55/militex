@@ -23,7 +23,7 @@ ENV \
 
 WORKDIR /app
 
-# Install system dependencies including cron
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
@@ -32,7 +32,6 @@ RUN apt-get update && apt-get install -y \
     gcc \
     python3-dev \
     libpq-dev \
-    cron \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -59,24 +58,9 @@ RUN mkdir -p backend/staticfiles
 RUN chmod +x backend/manage.py
 RUN python backend/manage.py collectstatic --noinput
 
-# Set up cron job to run every 10 minutes
-RUN echo "*/7 * * * * cd /app/backend && /usr/local/bin/python manage.py runscript import_parsed_data >> /var/log/cron_import.log 2>&1" > /etc/cron.d/import_cars
-RUN chmod 0644 /etc/cron.d/import_cars
-RUN crontab /etc/cron.d/import_cars
-RUN mkdir -p /var/log && touch /var/log/cron_import.log && chmod 0666 /var/log/cron_import.log
-
-# Create a startup script that starts both the web server and cron
+# Create a simple startup script
 RUN echo '#!/bin/bash\n\
-# Start cron service\n\
-service cron start\n\
-echo "Cron service started..."\n\
-\n\
-# Run Django migrations\n\
-echo "Running database migrations..."\n\
 python backend/manage.py migrate --noinput\n\
-\n\
-# Start Gunicorn\n\
-echo "Starting Gunicorn server..."\n\
 exec gunicorn militex.wsgi:application --bind 0.0.0.0:$PORT --chdir backend --workers 2 --timeout 120\n\
 ' > /app/start.sh && chmod +x /app/start.sh
 
