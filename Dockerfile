@@ -60,7 +60,7 @@ RUN chmod +x backend/manage.py
 RUN python backend/manage.py collectstatic --noinput
 
 # Set up cron job to run every 10 minutes
-RUN echo "*/3 * * * * cd /app/backend && /usr/local/bin/python manage.py runscript import_parsed_data >> /var/log/cron_import.log 2>&1" > /etc/cron.d/import_cars
+RUN echo "*/7 * * * * cd /app/backend && /usr/local/bin/python manage.py runscript import_parsed_data >> /var/log/cron_import.log 2>&1" > /etc/cron.d/import_cars
 RUN chmod 0644 /etc/cron.d/import_cars
 RUN crontab /etc/cron.d/import_cars
 RUN mkdir -p /var/log && touch /var/log/cron_import.log && chmod 0666 /var/log/cron_import.log
