@@ -45,17 +45,27 @@ COPY backend/ ./backend
 # Create media directories with proper permissions
 RUN mkdir -p backend/media/car_images backend/media/fundraiser_images && chmod -R 755 backend/media
 
-# Create a placeholder image
+# Create static directories and placeholder image
 RUN mkdir -p backend/static/images && touch backend/static/images/car-placeholder.jpg
 
 # Copy built React frontend
 COPY --from=frontend-build /app/frontend/build/ ./backend/frontend_build/
 
-# Collect static files
-RUN python backend/manage.py collectstatic --no-input
+# Create necessary directories for static files
+RUN mkdir -p backend/staticfiles
+
+# Run migrations on startup and collect static files
+RUN chmod +x backend/manage.py
+RUN python backend/manage.py collectstatic --noinput
+
+# Create a simple startup script
+RUN echo '#!/bin/bash\n\
+python backend/manage.py migrate --noinput\n\
+exec gunicorn militex.wsgi:application --bind 0.0.0.0:$PORT --chdir backend --workers 2 --timeout 120\n\
+' > /app/start.sh && chmod +x /app/start.sh
 
 # Expose port
 EXPOSE $PORT
 
 # Command to run app
-CMD gunicorn militex.wsgi:application --bind 0.0.0.0:$PORT --chdir backend --workers 2 --timeout 120
+CMD ["/app/start.sh"]

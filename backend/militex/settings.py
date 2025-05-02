@@ -14,7 +14,7 @@ mimetypes.add_type("text/css", ".css", True)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'cronenburg-123890')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-1s7v6#8ky3d$f@^jpwzn2q9!+m4_u8egl5xh%jc0=w3p_&t+cx')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
@@ -77,7 +77,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'militex.wsgi.application'
 
 # Database configuration
-# Use SQLite by default, but prefer PostgreSQL configuration from environment
+# Default configuration - will be overridden by DATABASE_URL if provided
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -89,8 +89,22 @@ DATABASES = {
 if 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config(
         default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600
+        conn_max_age=600,
+        ssl_require=True  # Enable SSL for secure connections
     )
+# Fallback to hardcoded values if needed for testing
+elif not DEBUG:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'koyebdb',
+        'USER': 'koyeb-adm',
+        'PASSWORD': 'npg_hPW1B6vbqoLI',
+        'HOST': 'ep-twilight-paper-a21put3g.eu-central-1.pg.koyeb.app',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
