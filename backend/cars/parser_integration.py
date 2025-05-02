@@ -472,17 +472,17 @@ def import_cars_sync(limit=100, admin_user_id=1):
             if not car_data:
                 continue
                 
-            # Check if car with same make, model and year already exists
-            existing_car = Car.objects.filter(
-                make=car_data["make"],
-                model=car_data["model"],
-                year=car_data["year"],
-                mileage=car_data["mileage"]
-            ).first()
+            # # Check if car with same make, model and year already exists
+            # existing_car = Car.objects.filter(
+            #     make=car_data["make"],
+            #     model=car_data["model"],
+            #     year=car_data["year"],
+            #     mileage=car_data["mileage"]
+            # ).first()
             
-            if existing_car:
-                print(f"[SKIP] Car already exists: {car_data['make']} {car_data['model']} ({car_data['year']})")
-                continue
+            # if existing_car:
+            #     print(f"[SKIP] Car already exists: {car_data['make']} {car_data['model']} ({car_data['year']})")
+            #     continue
             
             # Extract image URLs
             image_urls = car_data.pop("image_urls", [])
