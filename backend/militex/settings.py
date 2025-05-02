@@ -17,11 +17,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-1s7v6#8ky3d$f@^jpwzn2q9!+m4_u8egl5xh%jc0=w3p_&t+cx')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+# SECURITY WARNING: don't run with debug turned on in production!
+# Set to True temporarily to troubleshoot the 400 errors
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
 FORCE_SERVE_MEDIA = True
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'militex.koyeb.app,*.koyeb.app,localhost,127.0.0.1').split(',')
-
+# Update your ALLOWED_HOSTS setting to include all possible variations of your domain
+ALLOWED_HOSTS = [
+    'militex.koyeb.app',
+    'militex-test.koyeb.app',
+    'militex-service-partum55.koyeb.app',  # This might be the actual service hostname
+    'koyeb.app',
+    '*.koyeb.app',
+    'localhost',
+    '127.0.0.1',
+]
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -44,9 +54,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # This must come first
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add whitenoise middleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -191,16 +201,22 @@ CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_HTTPONLY = False  # Keep False to allow JS access
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = [
-    'https://militex.koyeb.app', 
+    'https://militex.koyeb.app',
+    'https://militex-test.koyeb.app',
+    'https://militex-service-partum55.koyeb.app',
     'https://*.koyeb.app',
 ]
 
 # CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # Temporarily enable all origins for debugging
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     'https://militex.koyeb.app',
+    'https://militex-test.koyeb.app',
+    'https://militex-service-partum55.koyeb.app',
     'https://*.koyeb.app',
 ]
+# For development add these origins too
 if DEBUG:
     CORS_ALLOWED_ORIGINS.extend([
         'http://localhost:3000',

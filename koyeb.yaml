@@ -21,13 +21,13 @@ services:
       - name: DJANGO_SETTINGS_MODULE
         value: "militex.settings"
       - name: DEBUG
-        value: "False"
+        value: "True"  # Temporarily set to True for troubleshooting
       - name: DATABASE_URL
         value: "postgres://koyeb-adm:npg_hPW1B6vbqoLI@ep-twilight-paper-a21put3g.eu-central-1.pg.koyeb.app/koyebdb"
       - name: SECRET_KEY
         value: "django-insecure-1s7v6#8ky3d$f@^jpwzn2q9!+m4_u8egl5xh%jc0=w3p_&t+cx"
       - name: ALLOWED_HOSTS
-        value: "*.koyeb.app,militex.koyeb.app"
+        value: "militex.koyeb.app,militex-test.koyeb.app,militex-service-partum55.koyeb.app,*.koyeb.app,koyeb.app"
     resources:
       cpu: 1000m
       memory: 2048Mi
