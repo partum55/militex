@@ -44,7 +44,7 @@ def run():
         
         # Run the import process
         print("Importing from Auto.ria...")
-        count = import_cars_sync(5, admin_user_id=admin_user.id)
+        count = import_cars_sync(30, admin_user_id=admin_user.id)
         print(f"Imported {count} cars from Auto.ria")
         
         # Verify import
