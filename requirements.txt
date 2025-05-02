@@ -7,7 +7,7 @@ sqlparse==0.4.4
 
 # REST Framework
 djangorestframework==3.14.0
-djangorestframework-simplejwt==5.2.2
+djangorestframework-simplejwt==5.4.0
 
 # Database
 # Replace psycopg2-binary with psycopg which has better Python 3.13 compatibility
