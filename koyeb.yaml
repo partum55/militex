@@ -7,7 +7,7 @@ services:
         protocol: http
     healthcheck:
       port: 8000
-      path: /
+      path: /admin/login/
       http_response_code: 200
       interval: 10s
       timeout: 5s
@@ -23,12 +23,14 @@ services:
       - name: DEBUG
         value: "False"
       - name: DATABASE_URL
-        value: "postgres://postgres:postgres@localhost:5432/militex"
+        secret: DATABASE_URL
       - name: SECRET_KEY
-        value: "your-secret-key-for-production"
+        secret: SECRET_KEY
+      - name: ALLOWED_HOSTS
+        value: "*.koyeb.app,militex.koyeb.app"
     resources:
       cpu: 1000m
-      memory: 2048Mi  # Increased memory allocation
+      memory: 2048Mi
     scaling:
       min: 1
       max: 1

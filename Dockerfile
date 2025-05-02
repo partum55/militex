@@ -32,7 +32,8 @@ RUN apt-get update && apt-get install -y \
     gcc \
     python3-dev \
     libpq-dev \
-    && apt-get clean
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 COPY requirements.txt .
@@ -42,7 +43,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend
 
 # Create media directories with proper permissions
-RUN mkdir -p backend/media/car_images && chmod -R 755 backend/media
+RUN mkdir -p backend/media/car_images backend/media/fundraiser_images && chmod -R 755 backend/media
 
 # Create a placeholder image
 RUN mkdir -p backend/static/images && touch backend/static/images/car-placeholder.jpg
@@ -56,5 +57,5 @@ RUN python backend/manage.py collectstatic --no-input
 # Expose port
 EXPOSE $PORT
 
-# Command to run by default (can be overridden in docker-compose)
-CMD ["gunicorn", "militex.wsgi:application", "--bind", "0.0.0.0:8000", "--chdir", "backend"]
+# Command to run app
+CMD gunicorn militex.wsgi:application --bind 0.0.0.0:$PORT --chdir backend --workers 2 --timeout 120

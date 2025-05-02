@@ -20,7 +20,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'cronenburg-123890')
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 FORCE_SERVE_MEDIA = True
-ALLOWED_HOSTS = ['militex.koyeb.app', '127.0.0.1', 'localhost', 'militex-test.koyeb.app']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'militex.koyeb.app,*.koyeb.app,localhost,127.0.0.1').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -76,10 +76,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'militex.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-# Default SQLite database for local development without PostgreSQL
+# Database configuration
+# Use SQLite by default, but prefer PostgreSQL configuration from environment
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -87,7 +85,7 @@ DATABASES = {
     }
 }
 
-# Use PostgreSQL if DATABASE_URL is set (for Docker and production)
+# Use PostgreSQL if DATABASE_URL is set (for Koyeb and production)
 if 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config(
         default=os.environ.get('DATABASE_URL'),
@@ -131,14 +129,12 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
-    os.path.join(BASE_DIR, 'frontend_build', 'static'),  # Point directly to frontend static folder
+    os.path.join(BASE_DIR, 'frontend_build', 'static'),
 ]
 
-# Make sure WhiteNoise can find the files
+# WhiteNoise settings for static files in production
 WHITENOISE_ROOT = os.path.join(BASE_DIR, 'frontend_build')
-
-# Change to standard WhiteNoise storage since custom one might have issues
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (User uploaded files)
 MEDIA_URL = '/media/'
@@ -174,14 +170,27 @@ SIMPLE_JWT = {
 }
 
 # CSRF and CORS settings
-CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False') == 'True'
+CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_HTTPONLY = False  # Keep False to allow JS access
-CSRF_COOKIE_SAMESITE = os.environ.get('CSRF_COOKIE_SAMESITE', 'Lax')
-CSRF_TRUSTED_ORIGINS = ['https://militex.koyeb.app', 'http://militex.koyeb.app', 'https://127.0.0.1:8000', 'https://localhost:8000', 'https://militex-test.koyeb.app']
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = [
+    'https://militex.koyeb.app', 
+    'https://*.koyeb.app',
+]
 
 # CORS settings
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = ['https://militex.koyeb.app', 'http://militex.koyeb.app', 'https://127.0.0.1:8000', 'https://localhost:8000', 'https://militex-test.koyeb.app']
+CORS_ALLOWED_ORIGINS = [
+    'https://militex.koyeb.app',
+    'https://*.koyeb.app',
+]
+if DEBUG:
+    CORS_ALLOWED_ORIGINS.extend([
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+    ])
 
 # Allow specific HTTP methods
 CORS_ALLOW_METHODS = [
@@ -208,24 +217,14 @@ CORS_ALLOW_HEADERS = [
 
 # Security settings for production
 if not DEBUG:
-    # Disable forced SSL redirect to prevent redirect loops
-    SECURE_SSL_REDIRECT = False
+    # We'll enable HTTPS-related settings for Koyeb
+    SECURE_SSL_REDIRECT = True
     
-    # Make sure cookie settings are compatible with both HTTP and HTTPS
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
+    # Cookie settings for HTTPS
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
     
-    # Add correct trusted origins for CSRF
-    CSRF_TRUSTED_ORIGINS = [
-        'https://militex.koyeb.app',
-        'https://militex-test.koyeb.app',
-        'http://militex.koyeb.app',
-        'http://militex-test.koyeb.app',
-        'https://*.koyeb.app', 
-        'http://*.koyeb.app'
-    ]
-    
-    # Other security settings can remain unchanged
+    # Other security settings
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_SECONDS = 31536000  # 1 year
@@ -233,11 +232,12 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     X_FRAME_OPTIONS = 'DENY'
 
+# Ensure media serving in all environments
 if DEBUG or FORCE_SERVE_MEDIA:
-    # Override any production settings for media
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     
     # Make sure directory exists
     os.makedirs(MEDIA_ROOT, exist_ok=True)
     os.makedirs(os.path.join(MEDIA_ROOT, 'car_images'), exist_ok=True)
+    os.makedirs(os.path.join(MEDIA_ROOT, 'fundraiser_images'), exist_ok=True)

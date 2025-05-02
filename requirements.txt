@@ -10,7 +10,7 @@ djangorestframework==3.14.0
 djangorestframework-simplejwt==5.2.2
 
 # Database
-psycopg2-binary==2.9.9  # PostgreSQL adapter
+psycopg2-binary==2.9.9
 dj-database-url==2.1.0
 
 # Utilities
