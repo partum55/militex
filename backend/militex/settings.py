@@ -198,7 +198,7 @@ CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_HTTPONLY = False  # Keep False to allow JS access
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = [
-    'https://militex.onrender.com'.
+    'https://militex.onrender.com',
     'https://militex-test.koyeb.app',
 ]
 
@@ -209,8 +209,6 @@ CORS_ALLOWED_ORIGINS = [
     'https://militex.koyeb.app',
     'https://militex.onrender.com',
     'https://militex-test.koyeb.app',
-    'https://militex-service-partum55.koyeb.app',
-    'https://*.koyeb.app',
 ]
 # For development add these origins too
 if DEBUG:
