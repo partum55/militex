@@ -24,11 +24,8 @@ DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 FORCE_SERVE_MEDIA = True
 # Update your ALLOWED_HOSTS setting to include all possible variations of your domain
 ALLOWED_HOSTS = [
-    'militex.koyeb.app',
     'militex-test.koyeb.app',
-    'militex-service-partum55.koyeb.app',  # This might be the actual service hostname
-    'koyeb.app',
-    '*.koyeb.app',
+    'militex.onrender.com',
     'localhost',
     '127.0.0.1',
 ]
@@ -201,10 +198,8 @@ CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_HTTPONLY = False  # Keep False to allow JS access
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = [
-    'https://militex.koyeb.app',
+    'https://militex.onrender.com'.
     'https://militex-test.koyeb.app',
-    'https://militex-service-partum55.koyeb.app',
-    'https://*.koyeb.app',
 ]
 
 # CORS settings
@@ -212,6 +207,7 @@ CORS_ALLOW_ALL_ORIGINS = True  # Temporarily enable all origins for debugging
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     'https://militex.koyeb.app',
+    'https://militex.onrender.com',
     'https://militex-test.koyeb.app',
     'https://militex-service-partum55.koyeb.app',
     'https://*.koyeb.app',

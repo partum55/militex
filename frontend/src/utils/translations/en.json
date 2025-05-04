@@ -178,7 +178,9 @@
     "passwordsDoNotMatch": "Passwords do not match",
     "registrationFailed": "Registration failed. Please try again.",
     "registering": "Registering...",
-    "iAmMilitary": "I am military personnel or veteran"
+    "iAmMilitary": "I am military personnel or veteran",
+    "personalInfo": "Personal Info",
+    "accountDetails": "Account Details"
   },
   "profile": {
     "myProfile": "My Profile",
