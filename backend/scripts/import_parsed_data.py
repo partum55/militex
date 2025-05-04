@@ -38,13 +38,15 @@ def run():
         print(f"Current car count: {current_count}")
         
         # Skip import if we already have more than 20 cars
-        if current_count >= 20:
-            print("Already have 20+ cars in the database, skipping import")
-            return
+        # if current_count >= 20:
+        #     print("Already have 20+ cars in the database, skipping import")
+        #     return
         
+        print('How mutch car do you want to import?')
+        a = input('Press Enter number of cars to import...')
         # Run the import process
         print("Importing from Auto.ria...")
-        count = import_cars_sync(30, admin_user_id=admin_user.id)
+        count = import_cars_sync(int(a), admin_user_id=admin_user.id)
         print(f"Imported {count} cars from Auto.ria")
         
         # Verify import

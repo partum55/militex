@@ -450,16 +450,18 @@ def import_cars_sync(limit=100, admin_user_id=1):
             admin_user_id = admin_user.id
             print(f"Created or found admin user with ID: {admin_user_id}")
         
-        # Check if we already have cars
-        existing_count = Car.objects.count()
-        if existing_count > 0:
-            print(f"Database already has {existing_count} cars")
-            limit = min(limit, max(20, 100 - existing_count))  # Adjust limit based on existing cars
-            if limit <= 0:
-                print("Already have enough cars, skipping import")
-                return 0
-            print(f"Will import up to {limit} more cars")
-        
+        # # Check if we already have cars
+        # existing_count = Car.objects.count()
+        # if existing_count > 0:
+        #     print(f"Database already has {existing_count} cars")
+        #     limit = min(limit, max(20, 100 - existing_count))  # Adjust limit based on existing cars
+        #     if limit <= 0:
+        #         print("Already have enough cars, skipping import")
+        #         return 0
+        #     print(f"Will import up to {limit} more cars")
+        print('Delete all cars')
+        Car.objects.all().delete()  # Delete all cars for testing purposes
+        print('All cars deleted')
         # Get the car links
         links = get_suv_links(limit=limit)
         imported_count = 0
@@ -470,17 +472,17 @@ def import_cars_sync(limit=100, admin_user_id=1):
             if not car_data:
                 continue
                 
-            # Check if car with same make, model and year already exists
-            existing_car = Car.objects.filter(
-                make=car_data["make"],
-                model=car_data["model"],
-                year=car_data["year"],
-                mileage=car_data["mileage"]
-            ).first()
+            # # Check if car with same make, model and year already exists
+            # existing_car = Car.objects.filter(
+            #     make=car_data["make"],
+            #     model=car_data["model"],
+            #     year=car_data["year"],
+            #     mileage=car_data["mileage"]
+            # ).first()
             
-            if existing_car:
-                print(f"[SKIP] Car already exists: {car_data['make']} {car_data['model']} ({car_data['year']})")
-                continue
+            # if existing_car:
+            #     print(f"[SKIP] Car already exists: {car_data['make']} {car_data['model']} ({car_data['year']})")
+            #     continue
             
             # Extract image URLs
             image_urls = car_data.pop("image_urls", [])
