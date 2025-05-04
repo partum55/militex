@@ -1,6 +1,3 @@
-"""
-Django settings for militex project.
-"""
 import os
 import dj_database_url
 from pathlib import Path
@@ -17,11 +14,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-1s7v6#8ky3d$f@^jpwzn2q9!+m4_u8egl5xh%jc0=w3p_&t+cx')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# SECURITY WARNING: don't run with debug turned on in production!
-# Set to True temporarily to troubleshoot the 400 errors
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
 FORCE_SERVE_MEDIA = True
+
 # Update your ALLOWED_HOSTS setting to include all possible variations of your domain
 ALLOWED_HOSTS = [
     'militex-test.koyeb.app',
@@ -29,6 +25,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
 ]
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -84,7 +81,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'militex.wsgi.application'
 
 # Database configuration
-# Use SQLite by default, but prefer PostgreSQL configuration from environment
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -92,30 +88,25 @@ DATABASES = {
     }
 }
 
-# Use PostgreSQL if DATABASE_URL is set (for Koyeb and production)
+# Use PostgreSQL if DATABASE_URL is set (e.g. on Render)
 if 'DATABASE_URL' in os.environ:
-    # Parse the database URL
     db_config = dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
+        default=os.environ['DATABASE_URL'],
         conn_max_age=600,
     )
-    
-    # Update the engine to django.db.backends.postgresql
-    # This is important for psycopg vs psycopg2 compatibility
     db_config['ENGINE'] = 'django.db.backends.postgresql'
-    
-    # Set the database config
     DATABASES['default'] = db_config
-# Fallback to hardcoded values if needed for testing
+# Fallback to manual Postgres config when DEBUG is False
 elif not DEBUG:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'koyebdb',
-        'USER': 'koyeb-adm',
-        'PASSWORD': 'npg_hPW1B6vbqoLI',
-        'HOST': 'ep-twilight-paper-a21put3g.eu-central-1.pg.koyeb.app',
+        'NAME': 'militex_postgres',
+        'USER': 'militex_postgres_user',
+        'PASSWORD': 'jA02daj4BXx0eCefq8uQ9yTiObG0GgeN',
+        'HOST': 'dpg-d0blad95pdvs73cpvcc0-a.frankfurt-postgres.render.com',
         'PORT': '5432',
     }
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -195,14 +186,13 @@ SIMPLE_JWT = {
 
 # CSRF and CORS settings
 CSRF_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_HTTPONLY = False  # Keep False to allow JS access
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = [
     'https://militex.onrender.com',
     'https://militex-test.koyeb.app',
 ]
 
-# CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # Temporarily enable all origins for debugging
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
@@ -210,7 +200,6 @@ CORS_ALLOWED_ORIGINS = [
     'https://militex.onrender.com',
     'https://militex-test.koyeb.app',
 ]
-# For development add these origins too
 if DEBUG:
     CORS_ALLOWED_ORIGINS.extend([
         'http://localhost:3000',
@@ -218,8 +207,6 @@ if DEBUG:
         'http://localhost:8000',
         'http://127.0.0.1:8000',
     ])
-
-# Allow specific HTTP methods
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -228,8 +215,6 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
-
-# Allow cookies and headers
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -244,14 +229,9 @@ CORS_ALLOW_HEADERS = [
 
 # Security settings for production
 if not DEBUG:
-    # We'll enable HTTPS-related settings for Koyeb
     SECURE_SSL_REDIRECT = True
-    
-    # Cookie settings for HTTPS
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    
-    # Other security settings
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_SECONDS = 31536000  # 1 year
@@ -261,10 +241,6 @@ if not DEBUG:
 
 # Ensure media serving in all environments
 if DEBUG or FORCE_SERVE_MEDIA:
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    
-    # Make sure directory exists
     os.makedirs(MEDIA_ROOT, exist_ok=True)
     os.makedirs(os.path.join(MEDIA_ROOT, 'car_images'), exist_ok=True)
     os.makedirs(os.path.join(MEDIA_ROOT, 'fundraiser_images'), exist_ok=True)
