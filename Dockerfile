@@ -65,7 +65,7 @@ exec gunicorn militex.wsgi:application --bind 0.0.0.0:$PORT --chdir backend --wo
 ' > /app/start.sh && chmod +x /app/start.sh
 
 # Expose port
-EXPOSE 8000
+EXPOSE $PORT
 
 # Command to run app
 CMD ["/app/start.sh"]
